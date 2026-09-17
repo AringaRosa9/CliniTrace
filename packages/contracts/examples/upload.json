@@ -1,0 +1,24 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/projects/00000000-0000-4000-8000-000000000010/documents",
+    "headers": {
+      "Idempotency-Key": "synthetic-upload-001"
+    },
+    "multipart": {
+      "patient_id": "00000000-0000-4000-8000-000000000011",
+      "encounter_id": "00000000-0000-4000-8000-000000000012",
+      "document_type": "outpatient",
+      "source": "synthetic-local",
+      "authorization_reference": "synthetic-only",
+      "file": "outpatient.txt"
+    }
+  },
+  "response": {
+    "document_id": "00000000-0000-4000-8000-000000000013",
+    "document_version_id": "00000000-0000-4000-8000-000000000002",
+    "job_id": "00000000-0000-4000-8000-000000000014",
+    "status_url": "/api/v1/projects/00000000-0000-4000-8000-000000000010/jobs/00000000-0000-4000-8000-000000000014",
+    "processing_status": "queued"
+  }
+}

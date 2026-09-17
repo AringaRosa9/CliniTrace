@@ -1,0 +1,67 @@
+name: S2 extraction and evidence
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17.10-alpine
+        env:
+          POSTGRES_DB: bljgh
+          POSTGRES_USER: bljgh
+          POSTGRES_PASSWORD: ci-only
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U bljgh" --health-interval 5s
+          --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:8.2.6-alpine
+        ports: ["26379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s
+          --health-timeout 3s --health-retries 20
+    env:
+      APP_ENV: test
+      DATABASE_URL: postgresql+psycopg://bljgh:ci-only@127.0.0.1:5432/bljgh
+      RUN_DB_TESTS: "1"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: npm install --global pnpm@12.4.2
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.10.6"
+          python-version: "3.12"
+      - run: sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-chi-sim fonts-dejavu-core
+      - run: pnpm install --frozen-lockfile
+      - run: uv sync --project backend --frozen
+      - run: uv run --project backend alembic -c backend/alembic.ini upgrade head
+      - run: uv run --project backend alembic -c backend/alembic.ini check
+      - run: uv run --project backend alembic -c backend/alembic.ini downgrade base
+      - run: uv run --project backend alembic -c backend/alembic.ini upgrade head
+      - run: >-
+          docker run -d --name bljgh-minio -p 127.0.0.1:59000:9000
+          -e MINIO_ROOT_USER=local-bljgh -e MINIO_ROOT_PASSWORD=local-only-change-me
+          quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z server /data
+      - run: timeout 60 bash -c 'until curl -fsS http://127.0.0.1:59000/minio/health/live; do sleep 1; done'
+      - run: uv run --project backend python scripts/db/bootstrap_s1.py
+      - run: bash scripts/ci/check.sh
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - run: pnpm test:s1
+      - run: pnpm test:s2
+      - run: pnpm exec playwright test --config playwright.app.config.ts
+      - run: pnpm audit --audit-level high
+      - run: uv run --project backend pip-audit --local
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: regression-evidence
+          path: |
+            test-results
+            docs/testing/baseline

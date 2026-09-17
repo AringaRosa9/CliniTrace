@@ -1,0 +1,427 @@
+{
+  "$defs": {
+    "BoundingBox": {
+      "additionalProperties": false,
+      "properties": {
+        "x0": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "X0",
+          "type": "number"
+        },
+        "x1": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "X1",
+          "type": "number"
+        },
+        "y0": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Y0",
+          "type": "number"
+        },
+        "y1": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Y1",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x0",
+        "y0",
+        "x1",
+        "y1"
+      ],
+      "title": "BoundingBox",
+      "type": "object"
+    },
+    "ClinicalTime": {
+      "additionalProperties": false,
+      "properties": {
+        "anchor_fact_revision_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Anchor Fact Revision Id"
+        },
+        "derivation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Derivation"
+        },
+        "original_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Original Text"
+        },
+        "precision": {
+          "enum": [
+            "year",
+            "month",
+            "day",
+            "datetime",
+            "relative",
+            "unknown"
+          ],
+          "title": "Precision",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "precision"
+      ],
+      "title": "ClinicalTime",
+      "type": "object"
+    },
+    "ClinicalValue": {
+      "additionalProperties": false,
+      "properties": {
+        "assertion": {
+          "default": "affirmed",
+          "enum": [
+            "affirmed",
+            "negated",
+            "suspected"
+          ],
+          "title": "Assertion",
+          "type": "string"
+        },
+        "comparator": {
+          "anyOf": [
+            {
+              "enum": [
+                "=",
+                "<",
+                ">",
+                "<=",
+                ">="
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comparator"
+        },
+        "experiencer": {
+          "default": "patient",
+          "enum": [
+            "patient",
+            "family",
+            "other",
+            "unknown"
+          ],
+          "title": "Experiencer",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "text",
+            "decimal",
+            "date"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "missing_reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MissingReason"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "normalized": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact decimal serialized as string; never float",
+          "title": "Normalized"
+        },
+        "raw": {
+          "minLength": 1,
+          "title": "Raw",
+          "type": "string"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        }
+      },
+      "required": [
+        "raw",
+        "normalized",
+        "kind"
+      ],
+      "title": "ClinicalValue",
+      "type": "object"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "block_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Block Id"
+        },
+        "boxes": {
+          "items": {
+            "$ref": "#/$defs/BoundingBox"
+          },
+          "title": "Boxes",
+          "type": "array"
+        },
+        "document_version_id": {
+          "format": "uuid",
+          "title": "Document Version Id",
+          "type": "string"
+        },
+        "id": {
+          "format": "uuid",
+          "title": "Id",
+          "type": "string"
+        },
+        "page": {
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "parse_artifact_id": {
+          "format": "uuid",
+          "title": "Parse Artifact Id",
+          "type": "string"
+        },
+        "quote": {
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        },
+        "span": {
+          "$ref": "#/$defs/TextSpan"
+        },
+        "text_version": {
+          "minLength": 1,
+          "title": "Text Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "document_version_id",
+        "parse_artifact_id",
+        "text_version",
+        "page",
+        "span",
+        "quote"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "ExtractedItem": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_group_id": {
+          "format": "uuid",
+          "title": "Entity Group Id",
+          "type": "string"
+        },
+        "event_time": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClinicalTime"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "value": {
+          "$ref": "#/$defs/ClinicalValue"
+        }
+      },
+      "required": [
+        "entity_group_id",
+        "value",
+        "evidence"
+      ],
+      "title": "ExtractedItem",
+      "type": "object"
+    },
+    "LabObservation": {
+      "additionalProperties": false,
+      "properties": {
+        "collected_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClinicalTime"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "method": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExtractedItem"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "name": {
+          "$ref": "#/$defs/ExtractedItem"
+        },
+        "result": {
+          "$ref": "#/$defs/ExtractedItem"
+        },
+        "specimen": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExtractedItem"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "name",
+        "result"
+      ],
+      "title": "LabObservation",
+      "type": "object"
+    },
+    "MissingReason": {
+      "enum": [
+        "missing",
+        "not_mentioned",
+        "explicitly_unknown",
+        "not_applicable",
+        "unreadable"
+      ],
+      "title": "MissingReason",
+      "type": "string"
+    },
+    "TextSpan": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "description": "Unicode code point offset, exclusive",
+          "exclusiveMinimum": 0,
+          "title": "End",
+          "type": "integer"
+        },
+        "start": {
+          "description": "Unicode code point offset, inclusive",
+          "minimum": 0,
+          "title": "Start",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "TextSpan",
+      "type": "object"
+    }
+  },
+  "$id": "urn:bljgh:schema:laboratory:1.0.0",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "observations": {
+      "items": {
+        "$ref": "#/$defs/LabObservation"
+      },
+      "title": "Observations",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "laboratory-1.0.0",
+      "default": "laboratory-1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "observations"
+  ],
+  "title": "LabTemplate",
+  "type": "object"
+}

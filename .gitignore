@@ -1,0 +1,40 @@
+# 操作系统与编辑器
+.DS_Store
+*.swp
+
+# 环境、凭据与本地运行数据
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+runtime/
+local-data/
+*.log
+
+# 前端依赖与构建输出；锁文件需要提交
+node_modules/
+.next/
+out/
+dist/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# Python 依赖、缓存与测试输出；uv.lock 需要提交
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+
+# 评测产物可能含受控数据，只提交人工审核后的匿名汇总
+/evaluation/reports/*
+!/evaluation/reports/.gitkeep

@@ -1,0 +1,7 @@
+SYNTHETIC-S2 😀 合成门诊记录
+诊断与病程仅用于工程测试，不含真实患者。
+diagnoses:2型糖尿病
+history:否认冠心病
+duration:5年
+medication:二甲双胍|剂量不详
+medication:阿卡波糖

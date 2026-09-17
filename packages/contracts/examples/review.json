@@ -1,0 +1,31 @@
+{
+  "request": {
+    "review_set_id": "00000000-0000-4000-8000-000000000015",
+    "expected_scope_revision": 1,
+    "fact_checks": [
+      {
+        "fact_revision_id": "00000000-0000-4000-8000-000000000005",
+        "checked": true
+      }
+    ],
+    "final_confirmation": true
+  },
+  "response": {
+    "id": "00000000-0000-4000-8000-000000000016",
+    "review_set_id": "00000000-0000-4000-8000-000000000015",
+    "scope_revision": 1,
+    "encounter_id": "00000000-0000-4000-8000-000000000012",
+    "members": [
+      {
+        "document_version_id": "00000000-0000-4000-8000-000000000002",
+        "extraction_run_id": "00000000-0000-4000-8000-000000000017",
+        "fact_revision_ids": [
+          "00000000-0000-4000-8000-000000000005"
+        ]
+      }
+    ],
+    "reviewed_at": "2026-09-16T08:00:00Z",
+    "reviewer_id": "00000000-0000-4000-8000-000000000018",
+    "status": "approved"
+  }
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "text": "合成🧪病历：否认冠心病史；二甲双胍，剂量不详。血糖<8.2 mmol/L。",
+    "text_version": "synthetic-text-1",
+    "start": 2,
+    "end": 3,
+    "quote": "🧪"
+  },
+  {
+    "text": "合成🧪病历：否认冠心病史；二甲双胍，剂量不详。血糖<8.2 mmol/L。",
+    "text_version": "synthetic-text-1",
+    "start": 6,
+    "end": 12,
+    "quote": "否认冠心病史"
+  },
+  {
+    "text": "合成🧪病历：否认冠心病史；二甲双胍，剂量不详。血糖<8.2 mmol/L。",
+    "text_version": "synthetic-text-1",
+    "start": 18,
+    "end": 22,
+    "quote": "剂量不详"
+  },
+  {
+    "text": "合成🧪病历：否认冠心病史；二甲双胍，剂量不详。血糖<8.2 mmol/L。",
+    "text_version": "synthetic-text-1",
+    "start": 25,
+    "end": 29,
+    "quote": "<8.2"
+  },
+  {
+    "text": "合成🧪病历：否认冠心病史；二甲双胍，剂量不详。血糖<8.2 mmol/L。",
+    "text_version": "synthetic-text-1",
+    "start": 0,
+    "end": 5,
+    "quote": "合成🧪病历"
+  }
+]

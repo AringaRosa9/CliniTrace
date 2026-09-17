@@ -1,0 +1,12 @@
+{
+  "response": {
+    "code": "VERSION_CONFLICT",
+    "message": "Resource changed; reload before retrying",
+    "details": {
+      "expected_revision": 1,
+      "current_revision": 2
+    },
+    "request_id": "00000000-0000-4000-8000-000000000021",
+    "retryable": false
+  }
+}

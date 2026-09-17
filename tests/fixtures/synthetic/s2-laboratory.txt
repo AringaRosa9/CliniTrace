@@ -1,0 +1,3 @@
+SYNTHETIC-S2 合成检验报告
+observation:FPG|<7.00|mmol/L
+observation:HbA1c|6.80|%

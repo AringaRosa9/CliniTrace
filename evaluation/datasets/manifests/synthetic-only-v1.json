@@ -1,0 +1,18 @@
+{
+  "version": "synthetic-only-v1",
+  "usage": "engineering-tests-only",
+  "real_patients": 0,
+  "patient_group": "synthetic-001",
+  "split": "engineering",
+  "not_a_quality_evaluation_dataset": true,
+  "files": [
+    {
+      "path": "synthetic/outpatient.json",
+      "sha256": "0e56ea13530f4b26539b4c3048130eac4b18317f924c75dca168d298fcc58ae1"
+    },
+    {
+      "path": "synthetic/laboratory.json",
+      "sha256": "64a2f04a7a22003c4c3c505d51a21cb60e7ac456bd97fafa4b54bd4ed661c402"
+    }
+  ]
+}

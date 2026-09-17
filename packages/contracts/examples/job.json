@@ -1,0 +1,17 @@
+{
+  "request": {
+    "job_id": "00000000-0000-4000-8000-000000000014"
+  },
+  "response": {
+    "id": "00000000-0000-4000-8000-000000000014",
+    "status": "queued",
+    "stage": null,
+    "attempt": 0,
+    "progress": null,
+    "error": null,
+    "created_at": "2026-09-16T08:00:00Z",
+    "cost_amount": null,
+    "cost_currency": null,
+    "duration_ms": null
+  }
+}

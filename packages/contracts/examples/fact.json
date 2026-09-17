@@ -1,0 +1,62 @@
+{
+  "request": {
+    "expected_revision": 1,
+    "reason": "合成契约验证：保留明确未知",
+    "value": {
+      "raw": "剂量不详",
+      "normalized": null,
+      "kind": "text",
+      "unit": null,
+      "comparator": null,
+      "missing_reason": "explicitly_unknown",
+      "assertion": "affirmed",
+      "experiencer": "patient"
+    },
+    "evidence_ids": [
+      "00000000-0000-4000-8000-000000000001"
+    ]
+  },
+  "response": {
+    "fact_id": "00000000-0000-4000-8000-000000000004",
+    "revision_id": "00000000-0000-4000-8000-000000000005",
+    "revision": 2,
+    "entity_group_id": "00000000-0000-4000-8000-000000000006",
+    "field_path": "medications[0].dose",
+    "value": {
+      "raw": "剂量不详",
+      "normalized": null,
+      "kind": "text",
+      "unit": null,
+      "comparator": null,
+      "missing_reason": "explicitly_unknown",
+      "assertion": "affirmed",
+      "experiencer": "patient"
+    },
+    "event_time": null,
+    "evidence": [
+      {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "document_version_id": "00000000-0000-4000-8000-000000000002",
+        "parse_artifact_id": "00000000-0000-4000-8000-000000000003",
+        "text_version": "synthetic-text-1",
+        "page": 1,
+        "span": {
+          "start": 18,
+          "end": 22
+        },
+        "quote": "剂量不详",
+        "boxes": [
+          {
+            "x0": 0.1,
+            "y0": 0.2,
+            "x1": 0.4,
+            "y1": 0.25
+          }
+        ],
+        "block_id": "p1-b1"
+      }
+    ],
+    "excluded": false,
+    "reason": "合成契约验证：保留明确未知"
+  }
+}

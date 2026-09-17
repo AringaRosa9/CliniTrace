@@ -1,0 +1,29 @@
+{
+  "name": "clinical-data-structuring",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@12.4.2",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "pnpm --filter frontend dev",
+    "build": "pnpm --filter frontend build",
+    "lint": "pnpm --filter frontend lint",
+    "typecheck": "pnpm --filter frontend typecheck",
+    "test": "pnpm --filter frontend test",
+    "format": "prettier --write frontend/src frontend/*.json frontend/*.mjs frontend/*.ts frontend/*.mts frontend/tests playwright*.ts tests/e2e scripts/*.mjs package.json pnpm-workspace.yaml .github/workflows",
+    "format:check": "prettier --check frontend/src frontend/*.json frontend/*.mjs frontend/*.ts frontend/*.mts frontend/tests playwright*.ts tests/e2e scripts/*.mjs package.json pnpm-workspace.yaml .github/workflows",
+    "contracts": "UV_CACHE_DIR=/tmp/bljgh-uv-cache uv run --project backend python scripts/generate_contracts.py && pnpm exec openapi-typescript packages/contracts/openapi/v1.json -o frontend/src/lib/api/schema.d.ts && prettier --write frontend/src/lib/api/schema.d.ts",
+    "contracts:check": "node scripts/check-contracts.mjs",
+    "test:e2e": "playwright test",
+    "test:app": "playwright test --config playwright.app.config.ts",
+    "test:s1": "playwright test --config playwright.s1.config.ts",
+    "test:s2": "playwright test --config playwright.s2.config.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "openapi-typescript": "7.13.0",
+    "prettier": "3.9.6"
+  }
+}
