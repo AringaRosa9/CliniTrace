@@ -1,0 +1,145 @@
+.management-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+.management-heading p {
+  color: var(--muted);
+  max-width: 64ch;
+}
+.management-columns {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.8fr) minmax(0, 2fr);
+  gap: 36px;
+}
+.management-columns > section:first-child {
+  border-right: 1px solid var(--line);
+  padding-right: 24px;
+}
+.management-workspace h2 {
+  margin: 24px 0 16px;
+}
+.management-workspace h2:first-child {
+  margin-top: 0;
+}
+.management-field {
+  display: grid;
+  gap: 6px;
+  margin-block: 14px;
+}
+.management-field > span {
+  font-weight: 600;
+}
+.management-form fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.management-form {
+  margin: 20px 0;
+}
+.management-workspace details {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.management-workspace summary {
+  cursor: pointer;
+  font-weight: 600;
+  min-height: 32px;
+}
+.management-json {
+  max-height: 440px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  background: var(--paper);
+  padding: 16px;
+}
+.management-workspace .record-select {
+  display: grid;
+  text-align: left;
+  justify-content: stretch;
+  gap: 6px;
+  width: 100%;
+  margin: 8px 0;
+}
+.management-workspace .record-select span {
+  font-size: 13px;
+  color: var(--muted);
+}
+.management-workspace [aria-pressed="true"] {
+  background: #e5eee7;
+  border-color: var(--accent);
+}
+.management-workspace input[type="checkbox"] {
+  width: 20px;
+  min-height: 20px;
+  accent-color: var(--accent);
+  vertical-align: middle;
+}
+.management-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.management-workspace table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.management-workspace th,
+.management-workspace td {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.management-workspace .table-scroll {
+  overflow-x: auto;
+}
+.management-workspace blockquote {
+  white-space: pre-wrap;
+  background: var(--paper);
+  margin: 20px 0;
+  padding: 20px;
+  font-family:
+    Songti SC,
+    SimSun,
+    serif;
+}
+.management-workspace [role="alert"] {
+  color: #a33b26;
+}
+.quality-empty {
+  padding: 48px 0;
+  border-block: 1px solid var(--line);
+}
+@media (max-width: 1000px) {
+  .management-columns {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .management-columns > section:first-child {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 0 0 24px;
+  }
+}
+@media (max-width: 600px) {
+  .management-heading {
+    display: block;
+  }
+  .management-workspace table {
+    font-size: 13px;
+  }
+}
+
+.management-workspace .hint {
+  overflow-wrap: anywhere;
+}

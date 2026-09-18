@@ -103,8 +103,16 @@ def _extract(
             raise ExtractionFailure("MODEL_RATE_LIMIT", True)
         body = {
             "model": cfg.extraction_model,
-            "instruction": PROMPT,
-            "schema": model.model_json_schema(),
+            "instruction": PROMPT
+            + "\n"
+            + request["configuration"].get("guide", "")
+            + "\n"
+            + "\n".join(request["configuration"].get("evidence_rules", [])),
+            "schema": request["configuration"].get("schema_definition", model.model_json_schema()),
+            "examples": {
+                "positive": request["configuration"].get("positive_examples", []),
+                "negative": request["configuration"].get("negative_examples", []),
+            },
             "max_output_bytes": cfg.extraction_max_output_bytes,
             "max_cost_cny": "0",
             "request_id": request["run_id"] + f"-{request['generation']}-{repair}",

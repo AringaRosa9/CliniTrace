@@ -61,7 +61,9 @@ def extract_synthetic(request: dict[str, Any]) -> dict[str, Any]:
             else None,
         }
 
-    output: dict[str, Any] = {"schema_version": request["configuration"]["template_version"]}
+    output: dict[str, Any] = {
+        "schema_version": request["configuration"]["template_version"].split("-")[0] + "-1.0.0"
+    }
     lab = output["schema_version"].startswith("laboratory")
     output.update(
         {"observations": []}

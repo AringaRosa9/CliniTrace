@@ -20,7 +20,8 @@
     "test:app": "playwright test --config playwright.app.config.ts",
     "test:s1": "playwright test --config playwright.s1.config.ts",
     "test:s2": "playwright test --config playwright.s2.config.ts",
-    "test:s3": "playwright test --config playwright.s3.config.ts"
+    "test:s3": "playwright test --config playwright.s3.config.ts",
+    "test:s4": "playwright test --config playwright.s4.config.ts"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",

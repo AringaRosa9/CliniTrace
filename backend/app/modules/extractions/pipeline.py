@@ -36,10 +36,16 @@ def digest(value: Any) -> str:
 
 
 def model_for(template: str) -> type[OutpatientTemplate] | type[LabTemplate]:
-    return OutpatientTemplate if template == "outpatient-1.0.0" else LabTemplate
+    return OutpatientTemplate if template.startswith("outpatient-") else LabTemplate
 
 
-def candidates(raw: str, version: str) -> list[dict[str, str]]:
+def candidates(
+    raw: str, version: str, payload: dict[str, Any] | None = None
+) -> list[dict[str, str]]:
+    if payload is not None:
+        from app.modules.terminology.service import search
+
+        return search(payload, raw)
     if version != TERMS["version"]:
         return []
     return [
@@ -132,7 +138,13 @@ def validate_evidence(
 
 
 def assemble(
-    raw: Any, parsed: dict[str, Any], version: str, artifact: str, template: str, terminology: str
+    raw: Any,
+    parsed: dict[str, Any],
+    version: str,
+    artifact: str,
+    template: str,
+    terminology: str,
+    terminology_payload: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     model = model_for(template).model_validate(raw)
     rows: list[FactRevision] = []
@@ -256,7 +268,9 @@ def assemble(
             except ValueError:
                 issues.append(issue("INVALID_DATE", rid, "日期格式或日历值无效。"))
         if fact.field_path in ("diagnoses", "history", "observations.name"):
-            found = candidates(fact.value.normalized or fact.value.raw, terminology)
+            found = candidates(
+                fact.value.normalized or fact.value.raw, terminology, terminology_payload
+            )
             mappings.append(
                 Coding(
                     fact_id=fact.fact_id,

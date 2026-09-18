@@ -26,6 +26,11 @@ def main() -> None:
 
         response = extract(cfg, request, record)
         (path / "raw.json").write_text(json.dumps(response, ensure_ascii=False))
+        from jsonschema import Draft202012Validator
+
+        schema = request["configuration"].get("schema_definition")
+        if schema:
+            Draft202012Validator(schema).validate(response["output"])
         result = assemble(
             response["output"],
             request["parsed"],
@@ -33,6 +38,7 @@ def main() -> None:
             request["parse_artifact_id"],
             request["configuration"]["template_version"],
             request["configuration"]["terminology_version"],
+            request["configuration"].get("terminology_payload"),
         )
         result["usage"] = response["usage"]
         (path / "result.json").write_text(json.dumps(result, ensure_ascii=False))

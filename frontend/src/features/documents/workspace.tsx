@@ -19,10 +19,17 @@ import { createApiClient } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import "./workspace.css";
 import { ReviewWorkspace } from "../review/workspace";
+import { ManagementWorkspace } from "../management/workspace";
 import { DatasetWorkspace } from "../datasets/workspace";
 type WorkspaceProps = {
   projectId?: string;
-  mode?: "documents" | "reviews" | "datasets";
+  mode?:
+    | "documents"
+    | "reviews"
+    | "datasets"
+    | "templates"
+    | "terminology"
+    | "quality";
   reviewSetId?: string;
 };
 
@@ -186,11 +193,19 @@ function AppShell({
           >
             审核工作台
           </Link>
-          {["抽取模板", "术语管理"].map((name) => (
-            <span className="planned-nav" key={name}>
+          {(
+            [
+              ["templates", "抽取模板"],
+              ["terminology", "术语管理"],
+            ] as const
+          ).map(([key, name]) => (
+            <Link
+              href={projectId ? `/projects/${projectId}/${key}` : `/${key}`}
+              aria-current={mode === key ? "page" : undefined}
+              key={key}
+            >
               {name}
-              <small>待开放</small>
-            </span>
+            </Link>
           ))}
           <Link
             href={projectId ? `/projects/${projectId}/datasets` : "/datasets"}
@@ -198,9 +213,12 @@ function AppShell({
           >
             数据集
           </Link>
-          <span className="planned-nav">
-            质量评测<small>待开放</small>
-          </span>
+          <Link
+            href={projectId ? `/projects/${projectId}/quality` : "/quality"}
+            aria-current={mode === "quality" ? "page" : undefined}
+          >
+            质量评测
+          </Link>
         </nav>
         <div className="sidebar-foot">准确 · 清晰 · 可追溯</div>
       </aside>
@@ -326,7 +344,13 @@ function Project({
 }: {
   user: Me;
   initialProject?: string;
-  mode: "documents" | "reviews" | "datasets";
+  mode:
+    | "documents"
+    | "reviews"
+    | "datasets"
+    | "templates"
+    | "terminology"
+    | "quality";
   reviewSetId?: string;
   logout: () => Promise<void>;
 }) {
@@ -379,11 +403,18 @@ function Project({
             csrf={user.csrf_token}
             reviewSetId={projectId === initialProject ? reviewSetId : undefined}
           />
-        ) : (
+        ) : mode === "datasets" ? (
           <DatasetWorkspace
             key={projectId}
             project={project}
             csrf={user.csrf_token}
+          />
+        ) : (
+          <ManagementWorkspace
+            key={`${projectId}-${mode}`}
+            project={project}
+            csrf={user.csrf_token}
+            mode={mode}
           />
         )
       ) : (
@@ -1491,6 +1522,17 @@ function ExtractionPanel({
   const [error, setError] = useState("");
   const [reason, setReason] = useState("");
   const path = { project_id: projectId, document_id: doc.id };
+  const [templateVersion, setTemplateVersion] = useState("");
+  const templates = useQuery({
+    queryKey: ["project", projectId, "template-versions"],
+    enabled: canImport,
+    queryFn: () =>
+      result(
+        api.GET("/api/v1/projects/{project_id}/template-versions", {
+          params: { path: { project_id: projectId } },
+        }),
+      ),
+  });
   const config = useQuery({
     queryKey: ["project", projectId, "extraction-config"],
     queryFn: () =>
@@ -1572,9 +1614,7 @@ function ExtractionPanel({
               body: {
                 parse_artifact_id: doc.artifact_id!,
                 template_version:
-                  doc.document_type === "laboratory"
-                    ? "laboratory-1.0.0"
-                    : "outpatient-1.0.0",
+                  templateVersion || `${doc.document_type}-1.0.0`,
               },
             },
           ),
@@ -1719,6 +1759,24 @@ function ExtractionPanel({
               抽取未完成：{String(run.error.code)}。失败结果不会加入待审核事实。
             </Notice>
           )}
+          {canImport && (
+            <Field title="抽取模板版本">
+              <select
+                value={templateVersion}
+                onChange={(e) => setTemplateVersion(e.target.value)}
+              >
+                <option value="">基础模板 {doc.document_type}-1.0.0</option>
+                {templates.data
+                  ?.filter((t) => t.version.startsWith(doc.document_type + "-"))
+                  .map((t) => (
+                    <option key={t.id} value={t.version}>
+                      {t.version}
+                    </option>
+                  ))}
+              </select>
+            </Field>
+          )}
+          {templates.error && <Notice>{templates.error.message}</Notice>}
           <div className="actions">
             {canImport && ["queued", "running"].includes(run.status) && (
               <button disabled={busy} onClick={() => void action("cancel")}>

@@ -217,7 +217,11 @@ def workspace(conn: Connection, row: dict[str, Any]) -> dict[str, Any]:
                 f["field_path"] in ("diagnoses", "history", "observations.name")
                 and not f["excluded"]
             ):
-                found = candidates(f["value"]["normalized"] or f["value"]["raw"], terminology)
+                found = candidates(
+                    f["value"]["normalized"] or f["value"]["raw"],
+                    terminology,
+                    configs[str(rid)].get("terminology_payload"),
+                )
                 codings.append(
                     {
                         "fact_id": f["fact_id"],
@@ -228,6 +232,9 @@ def workspace(conn: Connection, row: dict[str, Any]) -> dict[str, Any]:
                         "reason": "依据当前修订检索，仅候选，保留待映射。",
                     }
                 )
+    from app.modules.terminology.service import enrich
+
+    codings = enrich(conn, codings)
     # Relations for supplements are materialized in the relation ledger.
     decisions = {
         d["issue_id"]: d
@@ -242,6 +249,10 @@ def workspace(conn: Connection, row: dict[str, Any]) -> dict[str, Any]:
     for i in problems:
         if i["id"] in decisions:
             i.update(status=decisions[i["id"]]["status"], reason=decisions[i["id"]]["reason"])
+    confirmed = {c["revision_id"] for c in codings if c["status"] == "confirmed"}
+    for problem in problems:
+        if problem["rule"] == "PENDING_MAPPING" and set(problem["fact_revision_ids"]) <= confirmed:
+            problem.update(status="resolved", reason="已依据固定词库版本人工确认编码。")
     checked = list(
         conn.execute(
             select(checks.c.fact_revision_id).where(
@@ -355,6 +366,9 @@ def edit(svc: Service, fid: UUID, body: Correction | Exclusion) -> dict[str, Any
                 created_at=now(),
             )
         )
+        from app.modules.quality.service import capture_correction
+
+        capture_correction(svc, conn, payload, original["run_id"])
         refresh(
             conn,
             svc,
@@ -446,6 +460,20 @@ def supplement(svc: Service, body: Supplement) -> dict[str, Any]:
                             kind=child["field_path"],
                         )
                     )
+        conn.execute(
+            revisions.insert().values(
+                id=fact.revision_id,
+                **svc.scope,
+                fact_id=fact.fact_id,
+                revision=1,
+                payload=payload,
+                actor_id=svc.actor,
+                created_at=now(),
+            )
+        )
+        from app.modules.quality.service import capture_correction
+
+        capture_correction(svc, conn, payload, body.run_id)
         refresh(conn, svc, row, "fact.supplement", {"after": payload, "reason": body.reason})
         return payload
 
@@ -594,7 +622,14 @@ def return_material(svc: Service, sid: UUID, body: ReturnRequest) -> dict[str, A
     svc.require("original.read")
     with svc.tx() as conn:
         row = locked_set(conn, svc, sid, body.expected_scope_revision)
-        refresh(conn, svc, row, "review.return", body.model_dump(mode="json"))
+        refresh(
+            conn,
+            svc,
+            row,
+            "review.return",
+            body.model_dump(mode="json")
+            | {"run_ids": [m["extraction_run_id"] for m in row["members"]]},
+        )
         conn.execute(review_sets.update().where(review_sets.c.id == sid).values(status="returned"))
     return get(svc, sid)
 

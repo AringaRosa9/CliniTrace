@@ -19,7 +19,7 @@ def write(path: str, value: object) -> None:
 
 
 schema = contract_app.openapi()
-schema["info"]["description"] = "Implemented S1-S3 runtime contracts."
+schema["info"]["description"] = "Implemented S1-S4 runtime contracts."
 schema["components"]["securitySchemes"] = {
     "OIDC": {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
 }

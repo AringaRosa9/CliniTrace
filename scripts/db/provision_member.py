@@ -30,7 +30,7 @@ required = {
 }
 if set(value) != required or not value["reason"].strip():
     raise SystemExit("Manifest fields or reason invalid")
-allowed = {"import", "documents.read", "original.read", "audit.read", "review", "export.reviewed", "export.draft"}
+allowed = {"import", "documents.read", "original.read", "audit.read", "review", "export.reviewed", "export.draft", "templates.manage", "terminology.manage", "terminology.map", "quality.read", "quality.errors.read", "quality.annotate", "quality.review", "quality.adjudicate", "quality.manage"}
 if not set(value["capabilities"]) <= allowed:
     raise SystemExit("Unknown project capability")
 cfg = Settings(_env_file=Path(__file__).resolve().parents[2] / "backend" / ".env")

@@ -2,7 +2,7 @@ from alembic import context
 from sqlalchemy import create_engine, pool
 
 from app.core.config import get_settings
-from app.db import s1, s2, s3  # noqa: F401
+from app.db import s1, s2, s3, s4  # noqa: F401
 from app.db.models import metadata
 
 if context.is_offline_mode():

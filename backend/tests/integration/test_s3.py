@@ -421,7 +421,9 @@ def test_export_cancel_recovery_expiry_and_audit(env, monkeypatch):
     with env["engine"].connect() as conn:
         actions = list(
             conn.execute(
-                select(audit.c.action).where(audit.c.target_id == accepted["export_id"])
+                select(audit.c.action)
+                .where(audit.c.target_id == accepted["export_id"])
+                .order_by(audit.c.created_at, audit.c.id)
             ).scalars()
         )
         assert actions == ["export.create", "export.download"]

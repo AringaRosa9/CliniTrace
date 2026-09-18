@@ -14,6 +14,7 @@ from starlette.types import Message
 from app.api.s1 import router
 from app.api.s2 import router as s2_router
 from app.api.s3 import router as s3_router
+from app.api.s4 import router as s4_router
 from app.contracts.models import ErrorResponse, HealthResponse
 from app.core.config import Settings, get_settings
 from app.modules.identity.service import principal
@@ -123,6 +124,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(router)
     app.include_router(s2_router)
     app.include_router(s3_router)
+    app.include_router(s4_router)
     return app
 
 
