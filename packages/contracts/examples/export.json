@@ -1,17 +1,19 @@
 {
   "request": {
-    "review_snapshot_ids": [
-      "00000000-0000-4000-8000-000000000016"
-    ],
-    "draft_fact_revision_ids": [],
     "reviewed_only": true,
     "format": "json",
-    "purpose": "合成契约验证"
+    "purpose": "合成契约验证",
+    "selections": [
+      {
+        "review_set_id": "00000000-0000-4000-8000-000000000015",
+        "expected_scope_revision": 1
+      }
+    ]
   },
   "response": {
     "export_id": "00000000-0000-4000-8000-000000000019",
     "job_id": "00000000-0000-4000-8000-000000000020",
-    "status_url": "/api/v1/projects/00000000-0000-4000-8000-000000000010/jobs/00000000-0000-4000-8000-000000000020",
+    "status_url": "/api/v1/projects/00000000-0000-4000-8000-000000000010/exports/00000000-0000-4000-8000-000000000019",
     "reviewed_only": true,
     "manifest_version": "1.0"
   }

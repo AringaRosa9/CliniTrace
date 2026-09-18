@@ -20,7 +20,7 @@ from app.db.s2 import (
 )
 from app.integrations.storage.s3 import Storage
 from app.modules.documents.service import Service, enqueue, now
-from app.modules.extractions.pipeline import PROMPT, RULES, TERMS, compare_facts, digest, model_for
+from app.modules.extractions.pipeline import PROMPT, RULES, TERMS, digest, model_for
 from app.modules.extractions.schema import Activation, ExtractionCreate
 
 
@@ -226,6 +226,8 @@ def view(svc: Service, run_id: UUID) -> dict[str, Any]:
                 .order_by(facts.c.field_path, facts.c.id)
             ).scalars()
         )
+        payloads = [f for f in payloads if f.get("reason") is None]
+        original_ids = {f["fact_id"] for f in payloads}
         links = [
             dict(r)
             for r in conn.execute(
@@ -233,6 +235,11 @@ def view(svc: Service, run_id: UUID) -> dict[str, Any]:
                     relations.c.id, relations.c.source_id, relations.c.target_id, relations.c.kind
                 ).where(relations.c.run_id == run_id)
             ).mappings()
+        ]
+        links = [
+            r
+            for r in links
+            if str(r["source_id"]) in original_ids and str(r["target_id"]) in original_ids
         ]
         svc.event(conn, "extraction.read", run_id)
         return {
@@ -267,6 +274,8 @@ def recompute(conn: Connection, scope: dict[str, UUID], encounter_id: UUID) -> N
         text("SELECT pg_advisory_xact_lock(hashtextextended(:key, 0))"),
         {"key": f"review:{scope['project_id']}:{encounter_id}"},
     )
+    from app.modules.reviews.service import current_facts, rules
+
     selected = (
         conn.execute(
             select(active_runs.c.run_id)
@@ -276,12 +285,12 @@ def recompute(conn: Connection, scope: dict[str, UUID], encounter_id: UUID) -> N
         .scalars()
         .all()
     )
-    members, rows, issues = [], [], []
+    members: list[dict[str, Any]] = []
+    rows: list[dict[str, Any]] = []
+    issues: list[dict[str, Any]] = []
     for rid in selected:
         run = conn.execute(select(runs).where(runs.c.id == rid)).mappings().one()
-        members_facts = list(
-            conn.execute(select(facts.c.payload).where(facts.c.run_id == rid)).scalars()
-        )
+        members_facts = current_facts(conn, rid)
         rows.extend(members_facts)
         members.append(
             {
@@ -293,7 +302,30 @@ def recompute(conn: Connection, scope: dict[str, UUID], encounter_id: UUID) -> N
         issues.extend(
             conn.execute(select(results.c.issues).where(results.c.run_id == rid)).scalar_one()
         )
-    issues.extend(compare_facts(rows))
+    issues = rules(rows, issues)
+    from app.modules.extractions.pipeline import issue
+
+    for member in members:
+        rid = UUID(member["extraction_run_id"])
+        config = conn.execute(select(runs.c.configuration).where(runs.c.id == rid)).scalar_one()
+        if not any(not f["excluded"] for f in current_facts(conn, rid)):
+            issues.append(
+                issue(
+                    "EMPTY_EXTRACTION",
+                    [],
+                    "文书没有有效事实，请核对或补录：" + member["document_version_id"],
+                )
+            )
+        if config["template_version"].startswith("outpatient") and not any(
+            f["field_path"] == "diagnoses" and not f["excluded"] for f in current_facts(conn, rid)
+        ):
+            issues.append(
+                issue(
+                    "MISSING_DIAGNOSIS",
+                    [],
+                    "门诊文书缺少诊断，请核对文书 " + member["document_version_id"] + "。",
+                )
+            )
     issues = list({i["id"]: i for i in issues}.values())
     current = (
         conn.execute(

@@ -241,6 +241,9 @@ class Service:
                         raise HTTPException(409)
                     return dict(previous["response"])
                 self.validate_association(conn, patient, encounter)
+                from app.modules.reviews.service import lock
+
+                lock(conn, self.project, encounter)
                 duplicate = (
                     conn.execute(
                         select(
@@ -333,6 +336,13 @@ class Service:
                             request_id=self.request_id,
                         )
                     )
+                    from app.db.s2 import review_sets
+                    from app.modules.extractions.service import recompute
+
+                    if conn.execute(
+                        select(review_sets.c.id).where(review_sets.c.encounter_id == encounter)
+                    ).first():
+                        recompute(conn, self.scope, encounter)
                     enqueue(conn, self.scope, job_id)
                     self.event(
                         conn, "document.upload", document_id, {"version_id": str(version_id)}
@@ -481,9 +491,13 @@ class Service:
                 .join(versions, versions.c.id == runs.c.document_version_id)
                 .where(versions.c.document_id == document_id)
             ).first():
-                # Moving an extracted document requires a new explicit scope workflow (S3).
+                # Extracted documents retain their patient/encounter provenance.
                 raise HTTPException(409)
             self.validate_association(conn, body.patient_id, body.encounter_id)
+            from app.modules.reviews.service import lock
+
+            for encounter in sorted({row["encounter_id"], body.encounter_id}, key=str):
+                lock(conn, self.project, encounter)
             conn.execute(
                 documents.update()
                 .where(documents.c.id == document_id)
@@ -493,6 +507,14 @@ class Service:
                     revision=body.expected_revision + 1,
                 )
             )
+            from app.db.s2 import review_sets
+            from app.modules.extractions.service import recompute
+
+            for encounter in sorted({row["encounter_id"], body.encounter_id}, key=str):
+                if conn.execute(
+                    select(review_sets.c.id).where(review_sets.c.encounter_id == encounter)
+                ).first():
+                    recompute(conn, self.scope, encounter)
             self.event(
                 conn,
                 "document.associate",

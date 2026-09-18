@@ -47,6 +47,8 @@ with engine.begin() as conn:
     conn.execute(text("GRANT INSERT ON extraction_runs TO bljgh_api"))
     conn.execute(text("GRANT SELECT, INSERT, UPDATE ON active_runs, review_sets TO bljgh_api, bljgh_worker"))
     conn.execute(text("GRANT INSERT ON extraction_measurements, extraction_results, clinical_facts, evidence, fact_evidence, fact_relations TO bljgh_worker"))
+    conn.execute(text("GRANT INSERT ON fact_revisions, fact_checks, issue_dispositions, review_snapshots, dataset_definitions, export_jobs, clinical_facts, fact_relations TO bljgh_api"))
+    conn.execute(text("GRANT INSERT ON export_files TO bljgh_worker"))
     tenant, project, user = [
         UUID(f"10000000-0000-4000-8000-{n:012}") for n in (1, 2, 3)
     ]
@@ -76,11 +78,15 @@ with engine.begin() as conn:
                     "documents.read",
                     "original.read",
                     "audit.read",
+                    "review",
+                    "export.reviewed",
+                    "export.draft",
                 ],
             },
         ),
     ]:
         conn.execute(insert(table).values(**values).on_conflict_do_nothing())
+    conn.execute(memberships.update().where(memberships.c.user_id == user, memberships.c.project_id == project).values(capabilities=["import", "documents.read", "original.read", "audit.read", "review", "export.reviewed", "export.draft"]))
 storage = Storage(cfg)
 if not any(
     b["Name"] == cfg.s3_bucket for b in storage.client.list_buckets()["Buckets"]

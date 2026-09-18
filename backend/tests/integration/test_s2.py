@@ -62,7 +62,7 @@ def test_two_documents_durable_facts_relations_scope_and_isolation(env):
     )
     assert len(scope["members"]) == 2
     assert scope["status"] == "pending_review"
-    assert scope["scope_revision"] == 2
+    assert scope["scope_revision"] == 3  # S3: upload expands scope before extraction publishes
     execute(str(env["tenant"]), str(env["project"]), accepted["job_id"], env["cfg"])
     assert len(env["client"].get(accepted["status_url"]).json()["attempts"]) == 1
     assert (

@@ -14,9 +14,17 @@ import {
   type ReactNode,
 } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createApiClient } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import "./workspace.css";
+import { ReviewWorkspace } from "../review/workspace";
+import { DatasetWorkspace } from "../datasets/workspace";
+type WorkspaceProps = {
+  projectId?: string;
+  mode?: "documents" | "reviews" | "datasets";
+  reviewSetId?: string;
+};
 
 type Models = components["schemas"];
 type Me = Models["Me"];
@@ -103,7 +111,11 @@ function Notice({ children }: { children: ReactNode }) {
   );
 }
 
-export function DocumentWorkspace({ projectId }: { projectId?: string }) {
+export function DocumentWorkspace({
+  projectId,
+  mode = "documents",
+  reviewSetId,
+}: WorkspaceProps) {
   const [client] = useState(
     () =>
       new QueryClient({
@@ -114,11 +126,15 @@ export function DocumentWorkspace({ projectId }: { projectId?: string }) {
   );
   return (
     <QueryClientProvider client={client}>
-      <Session projectId={projectId} />
+      <AppShell projectId={projectId} mode={mode} reviewSetId={reviewSetId} />
     </QueryClientProvider>
   );
 }
-function Session({ projectId }: { projectId?: string }) {
+function AppShell({
+  projectId,
+  mode = "documents",
+  reviewSetId,
+}: WorkspaceProps) {
   const cache = useQueryClient();
   const [expired, setExpired] = useState(false);
   const [epoch, setEpoch] = useState(0);
@@ -158,17 +174,33 @@ function Session({ projectId }: { projectId?: string }) {
         </Link>
         <p className="sidebar-label">临床数据研究空间</p>
         <nav aria-label="业务模块">
-          <Link href="/documents" aria-current="page">
+          <Link
+            href="/documents"
+            aria-current={mode === "documents" ? "page" : undefined}
+          >
             文档任务 <small>已开放</small>
           </Link>
-          {["审核工作台", "抽取模板", "术语管理", "数据集", "质量评测"].map(
-            (name) => (
-              <span className="planned-nav" key={name}>
-                {name}
-                <small>待开放</small>
-              </span>
-            ),
-          )}
+          <Link
+            href={projectId ? `/projects/${projectId}/reviews` : "/reviews"}
+            aria-current={mode === "reviews" ? "page" : undefined}
+          >
+            审核工作台
+          </Link>
+          {["抽取模板", "术语管理"].map((name) => (
+            <span className="planned-nav" key={name}>
+              {name}
+              <small>待开放</small>
+            </span>
+          ))}
+          <Link
+            href={projectId ? `/projects/${projectId}/datasets` : "/datasets"}
+            aria-current={mode === "datasets" ? "page" : undefined}
+          >
+            数据集
+          </Link>
+          <span className="planned-nav">
+            质量评测<small>待开放</small>
+          </span>
         </nav>
         <div className="sidebar-foot">准确 · 清晰 · 可追溯</div>
       </aside>
@@ -178,6 +210,8 @@ function Session({ projectId }: { projectId?: string }) {
             key={`${user.id}-${epoch}`}
             user={user}
             initialProject={projectId}
+            mode={mode}
+            reviewSetId={reviewSetId}
             logout={async () => {
               await result(
                 api.POST("/api/v1/auth/logout", {
@@ -286,12 +320,17 @@ function Login({
 function Project({
   user,
   initialProject,
+  mode,
+  reviewSetId,
   logout,
 }: {
   user: Me;
   initialProject?: string;
+  mode: "documents" | "reviews" | "datasets";
+  reviewSetId?: string;
   logout: () => Promise<void>;
 }) {
+  const router = useRouter();
   const [projectId, setProjectId] = useState(
     initialProject ?? user.projects[0]?.id ?? "",
   );
@@ -309,11 +348,7 @@ function Project({
             onChange={(e) => {
               cache.removeQueries({ queryKey: ["project"] });
               setProjectId(e.target.value);
-              window.history.replaceState(
-                null,
-                "",
-                `/projects/${e.target.value}/documents`,
-              );
+              router.push(`/projects/${e.target.value}/${mode}`);
             }}
           >
             {!project && <option value={projectId}>请选择获准项目</option>}
@@ -335,7 +370,22 @@ function Project({
       </header>
       {error && <Notice>{error}</Notice>}
       {project ? (
-        <Documents key={projectId} project={project} csrf={user.csrf_token} />
+        mode === "documents" ? (
+          <Documents key={projectId} project={project} csrf={user.csrf_token} />
+        ) : mode === "reviews" ? (
+          <ReviewWorkspace
+            key={projectId}
+            project={project}
+            csrf={user.csrf_token}
+            reviewSetId={projectId === initialProject ? reviewSetId : undefined}
+          />
+        ) : (
+          <DatasetWorkspace
+            key={projectId}
+            project={project}
+            csrf={user.csrf_token}
+          />
+        )
       ) : (
         <main id="main">
           <h1>暂无可访问的项目</h1>
@@ -1685,6 +1735,14 @@ function ExtractionPanel({
           </div>
           {run.status === "succeeded" && (
             <>
+              {scope.data && (
+                <Link
+                  className="button-link"
+                  href={`/projects/${projectId}/reviews/${scope.data.id}`}
+                >
+                  进入就诊审核工作台
+                </Link>
+              )}
               <div className="extraction-facts">
                 <table>
                   <caption>

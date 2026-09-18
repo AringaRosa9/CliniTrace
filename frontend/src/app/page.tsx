@@ -41,7 +41,18 @@ export default async function Home() {
         <p className="sidebar-label">临床数据研究空间</p>
         <nav aria-label="业务模块">
           {modules.map(([n, title, , stage]) => (
-            <a key={n} href={n === "01" ? "/documents" : `#module-${n}`}>
+            <a
+              key={n}
+              href={
+                n === "01"
+                  ? "/documents"
+                  : n === "02"
+                    ? "/reviews"
+                    : n === "05"
+                      ? "/datasets"
+                      : `#module-${n}`
+              }
+            >
               <span>{title}</span>
               <small>{stage}</small>
             </a>
@@ -52,13 +63,13 @@ export default async function Home() {
       <div className="content">
         <header>
           <span>工作空间 / 概览</span>
-          <span className="badge">开发环境 · 文档与持久化</span>
+          <span className="badge">开发环境 · 审核与数据交付</span>
         </header>
         <main id="main">
           <p className="eyebrow">CLINICAL DATA STRUCTURING PLATFORM</p>
           <h1>从原始文书，到有据可循的数据。</h1>
           <p className="intro">
-            文档工作空间已开放。登录项目后可建立患者与就诊记录，上传、保存并预览原始文书。
+            文档、审核和数据集工作空间已开放。导入文书后核对原文证据，完成审核并导出可追溯的数据。
           </p>
           <section className="connection" aria-label="服务状态">
             <div>
@@ -91,6 +102,10 @@ export default async function Home() {
                   <span className="stage">
                     {n === "01" ? (
                       <a href="/documents">进入文档任务 →</a>
+                    ) : n === "02" ? (
+                      <a href="/reviews">进入审核工作台 →</a>
+                    ) : n === "05" ? (
+                      <a href="/datasets">进入数据集 →</a>
                     ) : (
                       `${stage} · 待开放`
                     )}
@@ -100,7 +115,8 @@ export default async function Home() {
             </ol>
           </section>
           <p className="footnote">
-            文书列表按登录项目读取。OCR、事实抽取、审核与评测仍按计划逐步开放。
+            数据按登录项目隔离。OCR 与抽取需显式启用获准服务；质量评测在 S4
+            开放。
           </p>
         </main>
         <footer>

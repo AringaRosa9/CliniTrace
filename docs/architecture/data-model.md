@@ -85,4 +85,11 @@ ReviewSet 为同次 Encounter 的显式集合，不能按患者所有文书隐�
 
 `0002_documents` 新增 users、memberships、patient_identities、encounter_details、documents、document_versions、jobs、job_attempts、parse_artifacts、outbox_events、idempotency_keys、audit_events；`0003_association` 强制文书关联的就诊属于同一患者。S1 表、查询索引与元数据已通过 Alembic drift check。版本/解析/审计既受数据库写权限限制，也有拒绝 UPDATE/DELETE 的触发器。原件 SHA-256 唯一范围为 tenant+project；幂等键唯一范围为 tenant+project+actor+operation+key。
 
-身份映射只允许当前已校验 issuer/subject；成员只允许当前已校验 user_id。项目数据只允许当前事务 tenant/project；两类应用角色均非超级用户且不得 BYPASSRLS。Outbox 为无临床内容的路由元数据，API 只写、投递器读写。更多运行约束和持久化对象前缀见 [S1 运行手册](../operations/s1.md)。S2–S4 的事实、审核快照和导出模型仍未迁移。
+身份映射只允许当前已校验 issuer/subject；成员只允许当前已校验 user_id。项目数据只允许当前事务 tenant/project；两类应用角色均非超级用户且不得 BYPASSRLS。Outbox 为无临床内容的路由元数据，API 只写、投递器读写。更多运行约束和持久化对象前缀见 [S1 运行手册](../operations/s1.md)。S2 事实及 S3 审核/导出台账已迁移至 0006；S4 标注/评测模型仍待实现。
+
+
+## S3 已落地台账
+
+`fact_revisions` 追加人工修订，临床事实初始行保持不变；补录初始事实的 reason 标记来源，读取抽取运行时仍只返回模型原始事实。`fact_checks` 和 `issue_dispositions` 绑定审核范围版本，旧确认永不应用到新修订。`review_snapshots` 按范围版本唯一保存完整不可变工作台快照，编辑、上传新文书和有效运行切换后仅当前范围失效。
+
+`dataset_definitions` 保存查询定义；`export_jobs` 固定用途、格式、成员快照、每事实审核状态、创建者与有效期；`export_files` 保存对象键、大小和哈希。导出使用通用 jobs/attempts/outbox 进行调度；任务中的 document_version_id 仅作来源锚点，导出取消/重试/恢复不更改文书状态。七张新表受项目 RLS 和追加写触发器保护。服务层仍验证补录证据归属、当前有效运行和所有期望版本。

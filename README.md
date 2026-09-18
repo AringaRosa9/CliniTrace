@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-S1 文档与持久化已实现：登录与项目能力、患者/就诊建档、真实文件上传、私有对象存储、Outbox/Worker 任务、解析预览、取消/重试/恢复、关联更正及审计。文档页面位于 `/documents` 和 `/projects/[projectId]/documents`。S2 已实现本地 OCR 适配、版本化 Schema 抽取、证据校验、事实关系、术语候选、规则问题及待审核集合。医学审核与导出继续在 S3 开发。详见 [S2 验收记录](docs/testing/s2-report.md) 和 [S2 运行手册](docs/operations/s2.md)。详见 [S1 验收记录](docs/testing/s1-report.md) 和 [运行手册](docs/operations/s1.md)。
+S1 文档与持久化已实现：登录与项目能力、患者/就诊建档、真实文件上传、私有对象存储、Outbox/Worker 任务、解析预览、取消/重试/恢复、关联更正及审计。文档页面位于 `/documents` 和 `/projects/[projectId]/documents`。S2 已实现本地 OCR 适配、版本化 Schema 抽取、证据校验、事实关系、术语候选、规则问题及待审核集合。S3 已实现三栏审核工作台、事实修订/补录/排除、逐项核对、问题处置、审核快照、数据集筛选与异步 JSON/CSV 导出。见 [S3 验收记录](docs/testing/s3-report.md) 和 [S3 运行手册](docs/operations/s3.md)。详见 [S2 验收记录](docs/testing/s2-report.md) 和 [S2 运行手册](docs/operations/s2.md)。详见 [S1 验收记录](docs/testing/s1-report.md) 和 [运行手册](docs/operations/s1.md)。
 
 FND-05 已固定本地合成开发基线，机构 OIDC、正式词库授权、OCR/模型获准环境、真实样本与付费预算仍待机构提供。参见 [接入决策](docs/decisions/0004-environment.md)。
 
@@ -56,15 +56,16 @@ pnpm test:e2e
 pnpm test:app
 pnpm test:s1
 pnpm test:s2
+pnpm test:s3
 RUN_DB_TESTS=1 uv run --project backend pytest backend/tests/integration
 pnpm contracts:check
 pnpm audit --audit-level high
 uv run --project backend pip-audit --local
 ```
 
-完整检查涵盖 lint、格式、类型、单元/契约测试、生成物一致性与前端生产构建。数据库测试必须指向已迁移的本地/CI 专用数据库，默认跳过，需要建角色权限，测试事务最终回滚。
+完整检查涵盖 lint、格式、类型、单元/契约测试、生成物一致性与前端生产构建。数据库测试必须指向已迁移的本地/CI 专用数据库，默认跳过，需要建立角色权限；集成测试写入独立合成项目，保留不可变台账供审计验证。
 
-修改 Pydantic 契约后执行 `pnpm contracts`，将 OpenAPI、JSON Schema、生成的 TypeScript 一起纳入版本控制。`v1.json` 包含未来业务设计，`runtime.json` 仅表示当前已实现接口。合成只读 mock 的启动见 [接口文档](docs/api/contract.md)。
+修改 Pydantic 契约后执行 `pnpm contracts`，将 OpenAPI、JSON Schema、生成的 TypeScript 一起纳入版本控制。`v1.json` 与 `runtime.json` 均包含当前 S1–S3 已实现接口。合成只读 mock 的启动见 [接口文档](docs/api/contract.md)。
 
 ## 原型与交付资料
 
@@ -76,4 +77,4 @@ uv run --project backend pip-audit --local
 - [API、幂等、版本、错误及 mock](docs/api/contract.md)
 - [架构决策](docs/decisions/0001-foundation.md) · [开发运维](docs/operations/development.md)
 
-此目录当前未初始化 Git；锁文件、CI 与实现均已写入磁盘，尚无 Git commit 或远程 CI 运行记录。
+验证记录来自本地执行；远程 CI 结果以实际工作流运行为准。
