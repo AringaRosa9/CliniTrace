@@ -49,6 +49,8 @@ with engine.begin() as conn:
     conn.execute(text("GRANT INSERT ON extraction_measurements, extraction_results, clinical_facts, evidence, fact_evidence, fact_relations TO bljgh_worker"))
     conn.execute(text("GRANT INSERT ON fact_revisions, fact_checks, issue_dispositions, review_snapshots, dataset_definitions, export_jobs, clinical_facts, fact_relations TO bljgh_api"))
     conn.execute(text("GRANT INSERT ON export_files TO bljgh_worker"))
+    conn.execute(text("GRANT INSERT ON template_drafts, template_versions, terminology_versions, terminology_activations, mapping_decisions, quality_samples, quality_annotations, gold_dataset_versions, evaluation_runs, correction_candidates, correction_reviews, correction_releases TO bljgh_api"))
+    conn.execute(text("GRANT UPDATE ON template_drafts TO bljgh_api"))
     tenant, project, user = [
         UUID(f"10000000-0000-4000-8000-{n:012}") for n in (1, 2, 3)
     ]
@@ -80,13 +82,13 @@ with engine.begin() as conn:
                     "audit.read",
                     "review",
                     "export.reviewed",
-                    "export.draft",
+                    "export.draft", "templates.manage", "terminology.manage", "terminology.map", "quality.read", "quality.errors.read", "quality.annotate", "quality.review", "quality.adjudicate", "quality.manage",
                 ],
             },
         ),
     ]:
         conn.execute(insert(table).values(**values).on_conflict_do_nothing())
-    conn.execute(memberships.update().where(memberships.c.user_id == user, memberships.c.project_id == project).values(capabilities=["import", "documents.read", "original.read", "audit.read", "review", "export.reviewed", "export.draft"]))
+    conn.execute(memberships.update().where(memberships.c.user_id == user, memberships.c.project_id == project).values(capabilities=["import", "documents.read", "original.read", "audit.read", "review", "export.reviewed", "export.draft", "templates.manage", "terminology.manage", "terminology.map", "quality.read", "quality.errors.read", "quality.annotate", "quality.review", "quality.adjudicate", "quality.manage"]))
 storage = Storage(cfg)
 if not any(
     b["Name"] == cfg.s3_bucket for b in storage.client.list_buckets()["Buckets"]

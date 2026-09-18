@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createApiClient } from "@/lib/api/client";
@@ -11,6 +11,7 @@ import { IssuePanel } from "./issue-panel";
 import { HistoryDrawer } from "./history-drawer";
 import type { Review, Models, Evidence, Fact } from "./types";
 import { states } from "./types";
+import { useActivity } from "../management/shared";
 import { DatasetWorkspace } from "../datasets/workspace";
 import "./workspace.css";
 const api = createApiClient();
@@ -53,6 +54,8 @@ function ReviewBody({
   csrf: string;
   sid: string;
 }) {
+  const activity = useActivity();
+  const session = useRef<string | null>(null);
   const cache = useQueryClient();
   const path = { project_id: project.id, sid };
   const query = useQuery({
@@ -81,6 +84,21 @@ function ReviewBody({
     setError("");
     try {
       await work();
+      session.current ??= crypto.randomUUID();
+      try {
+        await result(
+          api.POST("/api/v1/projects/{project_id}/review-sets/{sid}/activity", {
+            params: { path },
+            headers: { "X-CSRF-Token": csrf },
+            body: {
+              session_id: session.current,
+              active_seconds: activity.seconds(),
+            },
+          }),
+        );
+      } catch {
+        setMessage("操作已保存，审核耗时暂未记录。后续操作会重试累计记录。");
+      }
       await cache.invalidateQueries({ queryKey: ["project", project.id] });
       setMessage("已保存，审核范围和状态已更新。");
       return true;
@@ -104,7 +122,13 @@ function ReviewBody({
   const w = query.data;
   const headers = { "X-CSRF-Token": csrf };
   return (
-    <main id="main" className="review-main">
+    <main
+      id="main"
+      className="review-main"
+      onKeyDown={activity.tick}
+      onPointerDown={activity.tick}
+      onInput={activity.tick}
+    >
       <div className="review-heading">
         <div>
           <p className="eyebrow">EVIDENCE & REVIEW</p>

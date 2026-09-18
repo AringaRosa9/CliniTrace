@@ -1,4 +1,4 @@
-"""Published API contract: all S1–S3 routes are implemented."""
+"""Published API contract: all S1–S4 routes are implemented."""
 
 from app.core.config import Settings
 from app.main import create_app

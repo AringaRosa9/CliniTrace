@@ -77,7 +77,9 @@ def create(svc: Service, document_id: UUID, body: ExtractionCreate, key: str) ->
         )
         if not artifact:
             raise HTTPException(404)
-        if artifact["needs_ocr"] or body.template_version != row["document_type"] + "-1.0.0":
+        if artifact["needs_ocr"] or not body.template_version.startswith(
+            row["document_type"] + "-"
+        ):
             raise HTTPException(409)
         pending = conn.execute(
             select(func.count())
@@ -94,6 +96,21 @@ def create(svc: Service, document_id: UUID, body: ExtractionCreate, key: str) ->
         parsed = json.loads(Storage(cfg).read(artifact["object_key"]))
         if not parsed["text"].strip() or len(parsed["text"]) > cfg.extraction_max_chars:
             raise HTTPException(422)
+        from app.db.s4 import template_versions
+        from app.modules.terminology.service import active
+
+        published = (
+            conn.execute(
+                select(template_versions).where(
+                    template_versions.c.version == body.template_version
+                )
+            )
+            .mappings()
+            .first()
+        )
+        if body.template_version != row["document_type"] + "-1.0.0" and not published:
+            raise HTTPException(404)
+        vocabulary = active(conn)
         config = {
             "template_version": body.template_version,
             "schema_digest": digest(model_for(body.template_version).model_json_schema()),
@@ -112,6 +129,7 @@ def create(svc: Service, document_id: UUID, body: ExtractionCreate, key: str) ->
             "gateway_digest": digest(cfg.extraction_gateway_url),
             "authorization": cfg.extraction_authorization,
             "parser_version": artifact["parser_version"],
+            "pricing_version": "zero-charge-policy-1.0.0",
             "parameters": {
                 "max_chars": cfg.extraction_max_chars,
                 "max_output_bytes": cfg.extraction_max_output_bytes,
@@ -120,6 +138,25 @@ def create(svc: Service, document_id: UUID, body: ExtractionCreate, key: str) ->
                 "max_cost_cny": "0",
             },
         }
+        if published:
+            config.update(
+                template_id=str(published["id"]),
+                template_digest=published["digest"],
+                schema_definition=published["payload"]["schema_definition"],
+                schema_digest=digest(published["payload"]["schema_definition"]),
+                guide=published["payload"]["guide"],
+                positive_examples=published["payload"]["positive_examples"],
+                negative_examples=published["payload"]["negative_examples"],
+                guide_version=published["version"],
+                evidence_rules=published["payload"]["evidence_rules"],
+            )
+        if vocabulary:
+            config.update(
+                terminology_version=vocabulary["version"],
+                terminology_digest=vocabulary["digest"],
+                terminology_payload=vocabulary["payload"],
+                terminology_id=str(vocabulary["id"]),
+            )
         run_id, job_id = uuid4(), uuid4()
         conn.execute(
             jobs.insert().values(

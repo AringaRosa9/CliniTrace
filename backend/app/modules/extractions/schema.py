@@ -8,7 +8,9 @@ from app.contracts.models import Contract, FactRevision
 
 
 class ExtractionCreate(Contract):
-    template_version: Literal["outpatient-1.0.0", "laboratory-1.0.0"]
+    template_version: str = Field(
+        pattern=r"^(outpatient|laboratory)-[0-9]+\.[0-9]+\.[0-9]+$", max_length=100
+    )
     parse_artifact_id: UUID
 
 
