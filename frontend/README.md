@@ -6,4 +6,4 @@ Next.js App Router + React + TypeScript。根目录 `pnpm dev` 启动，`pnpm bu
 
 `src/lib/api/schema.d.ts` 从后端 OpenAPI 生成，不手改。`createApiClient` 通过 openapi-fetch 约束路径和参数。业务权限由 FastAPI 最终执行，页面依据返回能力显示操作。`API_INTERNAL_URL` 是服务端变量，不含公开密钥；浏览器走同源代理。应用不在 localStorage 保存医疗数据。
 
-单元测试：`pnpm test`；lint：`pnpm lint`；类型：`pnpm typecheck`。项目根目录 Playwright 包含原型、首页和 `pnpm test:s1` 的真实业务流程。正式三栏审核工作台在 S3 迁移。
+单元测试：`pnpm test`；lint：`pnpm lint`；类型：`pnpm typecheck`。项目根目录 Playwright 包含原型、首页和 `pnpm test:s1` 的真实业务流程。S3 已实现正式三栏工作台、审核队列和数据集/导出页面，`pnpm test:s3` 验证两文书审核与下载。

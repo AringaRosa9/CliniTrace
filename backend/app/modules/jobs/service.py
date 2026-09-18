@@ -9,11 +9,20 @@ from app.modules.documents.service import Service, enqueue, now
 
 
 def job_view(service: Service, job_id: UUID) -> dict[str, Any]:
-    service.require("documents.read")
     with service.tx() as conn:
         row = conn.execute(select(jobs).where(jobs.c.id == job_id)).mappings().first()
         if not row:
             raise HTTPException(404)
+        if row["kind"] == "exporting":
+            from app.db.s3 import exports
+            from app.modules.exports.service import authorize
+
+            export = (
+                conn.execute(select(exports).where(exports.c.job_id == job_id)).mappings().one()
+            )
+            authorize(service, dict(export))
+        else:
+            service.require("documents.read")
         history = (
             conn.execute(
                 select(
@@ -47,7 +56,6 @@ def job_view(service: Service, job_id: UUID) -> dict[str, Any]:
 
 
 def control(service: Service, job_id: UUID, action: str) -> dict[str, Any]:
-    service.require("import")
     with service.tx() as conn:
         row = (
             conn.execute(select(jobs).where(jobs.c.id == job_id).with_for_update())
@@ -56,6 +64,16 @@ def control(service: Service, job_id: UUID, action: str) -> dict[str, Any]:
         )
         if not row:
             raise HTTPException(404)
+        if row["kind"] == "exporting":
+            from app.db.s3 import exports
+            from app.modules.exports.service import authorize
+
+            export = (
+                conn.execute(select(exports).where(exports.c.job_id == job_id)).mappings().one()
+            )
+            authorize(service, dict(export))
+        else:
+            service.require("import")
         document_id = conn.execute(
             select(versions.c.document_id).where(versions.c.id == row["document_version_id"])
         ).scalar_one()
@@ -72,7 +90,7 @@ def control(service: Service, job_id: UUID, action: str) -> dict[str, Any]:
                     finished_at=now() if status == "cancelled" else None,
                 )
             )
-            if status == "cancelled":
+            if status == "cancelled" and row["kind"] != "exporting":
                 conn.execute(
                     documents.update()
                     .where(documents.c.id == document_id)
@@ -98,11 +116,12 @@ def control(service: Service, job_id: UUID, action: str) -> dict[str, Any]:
                     finished_at=None,
                 )
             )
-            conn.execute(
-                documents.update()
-                .where(documents.c.id == document_id)
-                .values(processing_status="queued")
-            )
+            if row["kind"] != "exporting":
+                conn.execute(
+                    documents.update()
+                    .where(documents.c.id == document_id)
+                    .values(processing_status="queued")
+                )
             enqueue(conn, service.scope, job_id)
         service.event(conn, f"job.{action}", job_id)
     return job_view(service, job_id)

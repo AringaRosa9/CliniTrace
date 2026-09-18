@@ -30,9 +30,9 @@ required = {
 }
 if set(value) != required or not value["reason"].strip():
     raise SystemExit("Manifest fields or reason invalid")
-allowed = {"import", "documents.read", "original.read", "audit.read"}
+allowed = {"import", "documents.read", "original.read", "audit.read", "review", "export.reviewed", "export.draft"}
 if not set(value["capabilities"]) <= allowed:
-    raise SystemExit("Unknown S1 capability")
+    raise SystemExit("Unknown project capability")
 cfg = Settings(_env_file=Path(__file__).resolve().parents[2] / "backend" / ".env")
 if cfg.app_env == "production" and value["issuer"] != cfg.oidc_issuer:
     raise SystemExit("Issuer must match institution configuration")

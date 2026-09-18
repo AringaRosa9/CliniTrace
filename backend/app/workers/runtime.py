@@ -48,7 +48,7 @@ celery.conf.update(
 def error(code: str, request_id: UUID, retryable: bool) -> dict[str, Any]:
     return {
         "code": code,
-        "message": "文书解析未完成，请查看失败代码。",
+        "message": "任务未完成，请查看失败代码。",
         "details": {"stage": "parsing"},
         "request_id": str(request_id),
         "retryable": retryable,
@@ -60,6 +60,13 @@ def execute(tenant: str, project: str, job_id: str, config: Settings | None = No
     scope = {"tenant_id": UUID(tenant), "project_id": UUID(project)}
     jid = UUID(job_id)
     tx = {"tenant": UUID(tenant), "project": UUID(project), "worker": True}
+    with transaction(cfg, **tx) as conn:  # type: ignore[arg-type]
+        kind = conn.execute(select(jobs.c.kind).where(jobs.c.id == jid)).scalar_one_or_none()
+    if kind == "exporting":
+        from app.workers.export import execute_export
+
+        execute_export(UUID(tenant), UUID(project), jid, cfg)
+        return
     with transaction(cfg, **tx) as conn:  # type: ignore[arg-type]
         job = (
             conn.execute(select(jobs).where(jobs.c.id == jid).with_for_update()).mappings().first()
@@ -457,10 +464,16 @@ def dispatch_once(cfg: Settings | None = None) -> int:
             .all()
         )
         for event in events:
+            with transaction(
+                cfg, tenant=event["tenant_id"], project=event["project_id"], worker=True
+            ) as scoped_conn:
+                queue = scoped_conn.execute(
+                    select(jobs.c.kind).where(jobs.c.id == event["job_id"])
+                ).scalar_one()
             celery.send_task(
                 "documents.parse",
                 args=[str(event["tenant_id"]), str(event["project_id"]), str(event["job_id"])],
-                queue="parsing",
+                queue=queue,
             )
             conn.execute(
                 outbox.update()
@@ -529,22 +542,25 @@ def recover_once(cfg: Settings | None = None) -> int:
                         error_code=failure["code"],
                     )
                 )
-                doc_id = conn.execute(
-                    select(versions.c.document_id).where(
-                        versions.c.id == job["document_version_id"]
-                    )
-                ).scalar_one()
-                conn.execute(
-                    documents.update()
-                    .where(documents.c.id == doc_id)
-                    .values(
-                        processing_status=(
-                            "extraction_failed" if job["kind"] == "extracting" else "parse_failed"
+                if job["kind"] != "exporting":
+                    doc_id = conn.execute(
+                        select(versions.c.document_id).where(
+                            versions.c.id == job["document_version_id"]
                         )
-                        if status == "failed"
-                        else status
+                    ).scalar_one()
+                    conn.execute(
+                        documents.update()
+                        .where(documents.c.id == doc_id)
+                        .values(
+                            processing_status=(
+                                "extraction_failed"
+                                if job["kind"] == "extracting"
+                                else "parse_failed"
+                            )
+                            if status == "failed"
+                            else status
+                        )
                     )
-                )
                 lost = status == "queued"
                 count += 1
             if lost:

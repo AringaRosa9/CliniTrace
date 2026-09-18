@@ -10,18 +10,16 @@ from app.contracts.models import (
     ErrorResponse,
     Evidence,
     ExportAccepted,
-    ExportRequest,
-    FactPatch,
     FactRevision,
     JobResponse,
     LabTemplate,
     OutpatientTemplate,
-    ReviewRequest,
-    ReviewSnapshot,
     TextSpan,
     UploadAccepted,
     validate_quote,
 )
+from app.modules.exports.schema import ExportCreate
+from app.modules.reviews.schema import Approval, Correction, SnapshotView
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -30,11 +28,11 @@ ROOT = Path(__file__).resolve().parents[3]
     "name,request_model,response",
     [
         ("upload", None, UploadAccepted),
-        ("fact", FactPatch, FactRevision),
+        ("fact", Correction, FactRevision),
         ("evidence", None, Evidence),
-        ("review", ReviewRequest, ReviewSnapshot),
+        ("review", Approval, SnapshotView),
         ("job", None, JobResponse),
-        ("export", ExportRequest, ExportAccepted),
+        ("export", ExportCreate, ExportAccepted),
         ("error", None, ErrorResponse),
     ],
 )
@@ -94,9 +92,10 @@ def test_unknown_and_negation_are_independent():
 def test_review_confirmation_and_drafts():
     sample = json.loads((ROOT / "packages/contracts/examples/review.json").read_text())["request"]
     with pytest.raises(ValidationError):
-        ReviewRequest.model_validate({**sample, "final_confirmation": False})
+        Approval.model_validate({**sample, "final_confirmation": False})
     sample = json.loads((ROOT / "packages/contracts/examples/export.json").read_text())["request"]
+    assert ExportCreate.model_validate(sample).reviewed_only is True
     with pytest.raises(ValidationError):
-        ExportRequest.model_validate(
-            {**sample, "draft_fact_revision_ids": sample["review_snapshot_ids"]}
-        )
+        ExportCreate.model_validate({**sample, "selections": []})
+    with pytest.raises(ValidationError):
+        ExportCreate.model_validate({**sample, "selections": sample["selections"] * 2})

@@ -1,4 +1,4 @@
-"""Inspect (default) or delete confirmed unreferenced S1 objects older than 24h."""
+"""Inspect (default) or delete confirmed unreferenced objects or expired exports older than 24h."""
 
 import argparse
 import sys
@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "backend"))
 from app.core.config import Settings
 from app.db.s1 import artifacts, versions
 from app.db.s2 import results, measurements
+from app.db.s3 import exports, export_files
 from app.db.session import transaction
 from app.integrations.storage.s3 import Storage
 from sqlalchemy import select
@@ -29,7 +30,7 @@ for page in storage.client.get_paginator("list_objects_v2").paginate(
         parts = key.split("/")
         if (
             len(parts) not in (5, 6)
-            or parts[0] not in ("quarantine", "parsed", "extracted")
+            or parts[0] not in ("quarantine", "parsed", "extracted", "exports")
             or obj["LastModified"] >= cutoff
         ):
             continue
@@ -39,6 +40,8 @@ for page in storage.client.get_paginator("list_objects_v2").paginate(
                 exists = conn.execute(
                     select(versions.c.id).where(versions.c.object_key == key)
                 ).first()
+            elif parts[0] == "exports":
+                exists = conn.execute(select(export_files.c.id).join(exports, exports.c.id == export_files.c.export_id).where(export_files.c.object_key == key, exports.c.expires_at > datetime.now(UTC))).first()
             elif parts[0] == "extracted":
                 manifest = key.rsplit("/", 1)[0] + "/raw.json"
                 exists = conn.execute(select(results.c.id).where(results.c.raw_object_key == manifest)).first()

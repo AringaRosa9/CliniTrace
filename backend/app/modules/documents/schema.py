@@ -107,7 +107,7 @@ class AttemptView(Contract):
 class JobView(Contract):
     id: UUID
     status: str
-    stage: Literal["parsing", "extracting"] = "parsing"
+    stage: Literal["parsing", "extracting", "exporting"] = "parsing"
     attempt: int
     progress: int
     error: dict[str, Any] | None

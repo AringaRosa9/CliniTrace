@@ -1,4 +1,4 @@
-name: S2 extraction and evidence
+name: S3 review and delivery
 on: [push, pull_request]
 permissions:
   contents: read
@@ -55,6 +55,7 @@ jobs:
       - run: pnpm test:e2e
       - run: pnpm test:s1
       - run: pnpm test:s2
+      - run: pnpm test:s3
       - run: pnpm exec playwright test --config playwright.app.config.ts
       - run: pnpm audit --audit-level high
       - run: uv run --project backend pip-audit --local
