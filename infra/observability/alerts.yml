@@ -1,0 +1,46 @@
+# Initial engineering thresholds; replace with signed institution thresholds.
+groups:
+  - name: clinical-runtime
+    rules:
+      - alert: ClinicalMonitoringUnavailable
+        expr: up{job=~"clinical-.*"} == 0 or bljgh_monitor_collection_success == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations:
+          summary: "监控采集失败，不能将缺失数据视为空队列"
+          runbook: "docs/operations/s5.md#监控与值班"
+      - alert: ClinicalComponentMissing
+        expr: bljgh_component_live == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations:
+          summary: "Worker 或投递器心跳缺失"
+          runbook: "docs/operations/s5.md#监控与值班"
+      - alert: ClinicalQueueStalled
+        expr: bljgh_oldest_queued_seconds > 180 or bljgh_expired_leases > 0
+        for: 3m
+        labels: {severity: warning}
+        annotations:
+          summary: "任务等待或租约异常"
+          runbook: "docs/operations/s5.md#监控与值班"
+      - alert: ClinicalApiErrors
+        expr: sum(rate(bljgh_http_request_duration_seconds_count{status=~"5.."}[5m])) / clamp_min(sum(rate(bljgh_http_request_duration_seconds_count[5m])), 0.001) > 0.05
+        for: 5m
+        labels: {severity: critical}
+        annotations:
+          summary: "API 失败率超过工程观察线"
+          runbook: "docs/operations/s5.md#监控与值班"
+      - alert: ClinicalApiLatency
+        expr: histogram_quantile(0.95, sum by (le) (rate(bljgh_http_request_duration_seconds_bucket[5m]))) > 1
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: "API P95 超过工程观察线"
+          runbook: "docs/operations/s5.md#监控与值班"
+      - alert: ClinicalStageFailures
+        expr: bljgh_jobs{status="failed"} > 0
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: "存在失败任务，按任务类别检查失败代码与重试记录"
+          runbook: "docs/operations/s5.md#监控与值班"

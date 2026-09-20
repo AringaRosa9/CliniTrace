@@ -123,7 +123,7 @@ export function DatasetWorkspace({
     });
   }
   return (
-    <main id="main" className="datasets-main">
+    <main id="main" tabIndex={-1} className="datasets-main">
       <div className="review-heading">
         <div>
           <p className="eyebrow">{queue ? "REVIEW QUEUE" : "RESEARCH DATA"}</p>

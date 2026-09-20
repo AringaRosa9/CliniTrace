@@ -11,6 +11,7 @@ from typing import Any
 from uuid import UUID, uuid4
 
 from celery import Celery  # type: ignore[import-untyped]
+from celery.signals import heartbeat_sent, worker_ready  # type: ignore[import-untyped]
 from sqlalchemy import select
 
 from app.core.config import Settings, get_settings
@@ -28,6 +29,7 @@ from app.modules.extractions.pipeline import (
     model_for,
 )
 from app.modules.extractions.service import publish
+from app.operations.telemetry import heartbeat
 
 settings = get_settings()
 celery: Any = Celery("clinical_documents", broker=settings.redis_url)
@@ -45,6 +47,15 @@ celery.conf.update(
 )
 
 
+@worker_ready.connect  # type: ignore[untyped-decorator]
+@heartbeat_sent.connect  # type: ignore[untyped-decorator]
+def worker_heartbeat(sender: Any = None, **kwargs: Any) -> None:
+    try:
+        heartbeat(settings, "worker", str(getattr(sender, "hostname", "worker")))
+    except Exception:
+        pass  # Dependency failure is detected by TTL expiry and collection alarms.
+
+
 def error(code: str, request_id: UUID, retryable: bool) -> dict[str, Any]:
     return {
         "code": code,
@@ -57,6 +68,8 @@ def error(code: str, request_id: UUID, retryable: bool) -> dict[str, Any]:
 
 def execute(tenant: str, project: str, job_id: str, config: Settings | None = None) -> None:
     cfg = config or settings
+    if cfg.maintenance_mode:
+        return
     scope = {"tenant_id": UUID(tenant), "project_id": UUID(project)}
     jid = UUID(job_id)
     tx = {"tenant": UUID(tenant), "project": UUID(project), "worker": True}
@@ -450,6 +463,8 @@ def parse_task(tenant: str, project: str, job_id: str) -> None:
 
 def dispatch_once(cfg: Settings | None = None) -> int:
     cfg = cfg or settings
+    if cfg.maintenance_mode:
+        return 0
     count = 0
     with transaction(cfg, worker=True) as conn:
         events = (
@@ -486,6 +501,8 @@ def dispatch_once(cfg: Settings | None = None) -> int:
 
 def recover_once(cfg: Settings | None = None) -> int:
     cfg = cfg or settings
+    if cfg.maintenance_mode:
+        return 0
     count = 0
     # The routing table is retained for recovery; it contains only IDs and timestamps.
     with transaction(cfg, worker=True) as conn:
@@ -587,6 +604,7 @@ def main() -> None:
         try:
             recovered = recover_once()
             delivered = dispatch_once()
+            heartbeat(settings, "dispatcher")
             if recovered or delivered:
                 logging.info(
                     json.dumps(

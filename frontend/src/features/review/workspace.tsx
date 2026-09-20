@@ -29,7 +29,7 @@ export function ReviewWorkspace({
     !project.capabilities.includes("original.read")
   )
     return (
-      <main id="main">
+      <main id="main" tabIndex={-1}>
         <h1>审核工作台</h1>
         <p>需要项目审核和原文读取权限，请联系项目负责人。</p>
       </main>
@@ -123,6 +123,7 @@ function ReviewBody({
   const headers = { "X-CSRF-Token": csrf };
   return (
     <main
+      tabIndex={-1}
       id="main"
       className="review-main"
       onKeyDown={activity.tick}

@@ -1,0 +1,254 @@
+{
+  "schema_version": 1,
+  "environment": "institution",
+  "release_commit": "",
+  "images": {
+    "backend": "",
+    "frontend": "",
+    "gateway": ""
+  },
+  "migration": "0007_quality",
+  "configuration_sha256": "",
+  "dataset_sha256": "",
+  "versions": {
+    "template": "",
+    "guide": "",
+    "prompt": "",
+    "rules": "",
+    "model": "",
+    "terminology": "",
+    "parser": ""
+  },
+  "approvals": {
+    "institution": {
+      "reviewer": "",
+      "signed_at": "",
+      "evidence": ""
+    },
+    "medical": {
+      "reviewer": "",
+      "signed_at": "",
+      "evidence": ""
+    },
+    "product": {
+      "reviewer": "",
+      "signed_at": "",
+      "evidence": ""
+    },
+    "operations": {
+      "reviewer": "",
+      "signed_at": "",
+      "evidence": ""
+    }
+  },
+  "evidence": {
+    "environment_approval": {
+      "path": "",
+      "sha256": ""
+    },
+    "data_authorization": {
+      "path": "",
+      "sha256": ""
+    },
+    "terminology_license": {
+      "path": "",
+      "sha256": ""
+    },
+    "oidc": {
+      "path": "",
+      "sha256": ""
+    },
+    "security": {
+      "path": "",
+      "sha256": ""
+    },
+    "accessibility": {
+      "path": "",
+      "sha256": ""
+    },
+    "load": {
+      "path": "",
+      "sha256": ""
+    },
+    "quality": {
+      "path": "",
+      "sha256": ""
+    },
+    "restore": {
+      "path": "",
+      "sha256": ""
+    },
+    "deletion": {
+      "path": "",
+      "sha256": ""
+    },
+    "rollback": {
+      "path": "",
+      "sha256": ""
+    },
+    "uat": {
+      "path": "",
+      "sha256": ""
+    },
+    "training": {
+      "path": "",
+      "sha256": ""
+    },
+    "oncall": {
+      "path": "",
+      "sha256": ""
+    },
+    "retention": {
+      "path": "",
+      "sha256": ""
+    }
+  },
+  "metrics": {
+    "critical_field_f1": {
+      "threshold": null,
+      "measured": null,
+      "unit": "ratio",
+      "denominator": null,
+      "evidence": "",
+      "conditions": ""
+    },
+    "mapping_accuracy": {
+      "threshold": null,
+      "measured": null,
+      "unit": "ratio",
+      "denominator": null,
+      "evidence": "",
+      "conditions": ""
+    },
+    "negation_to_positive": {
+      "threshold": null,
+      "measured": null,
+      "unit": "count",
+      "denominator": null,
+      "evidence": "",
+      "conditions": ""
+    },
+    "dose_errors": {
+      "threshold": null,
+      "measured": null,
+      "unit": "count",
+      "denominator": null,
+      "evidence": "",
+      "conditions": ""
+    },
+    "patient_link_errors": {
+      "threshold": null,
+      "measured": null,
+      "unit": "count",
+      "denominator": null,
+      "evidence": "",
+      "conditions": ""
+    },
+    "document_p95_seconds": {
+      "threshold": null,
+      "measured": null,
+      "unit": "seconds",
+      "denominator": null,
+      "evidence": "",
+      "conditions": ""
+    },
+    "queue_p95_seconds": {
+      "threshold": null,
+      "measured": null,
+      "unit": "seconds",
+      "denominator": null,
+      "evidence": "",
+      "conditions": ""
+    },
+    "failure_rate": {
+      "threshold": null,
+      "measured": null,
+      "unit": "ratio",
+      "denominator": null,
+      "evidence": "",
+      "conditions": ""
+    },
+    "api_p95_ms": {
+      "threshold": null,
+      "measured": null,
+      "unit": "ms",
+      "denominator": null,
+      "evidence": "",
+      "conditions": ""
+    },
+    "review_concurrency": {
+      "threshold": null,
+      "measured": null,
+      "unit": "users",
+      "denominator": null,
+      "evidence": "",
+      "conditions": ""
+    },
+    "export_max_facts": {
+      "threshold": null,
+      "measured": null,
+      "unit": "facts",
+      "denominator": null,
+      "evidence": "",
+      "conditions": ""
+    },
+    "review_median_seconds": {
+      "threshold": null,
+      "measured": null,
+      "unit": "seconds",
+      "denominator": null,
+      "evidence": "",
+      "conditions": ""
+    },
+    "review_p95_seconds": {
+      "threshold": null,
+      "measured": null,
+      "unit": "seconds",
+      "denominator": null,
+      "evidence": "",
+      "conditions": ""
+    },
+    "cost_per_document_cny": {
+      "threshold": null,
+      "measured": null,
+      "unit": "CNY",
+      "denominator": null,
+      "evidence": "",
+      "conditions": ""
+    },
+    "rpo_seconds": {
+      "threshold": null,
+      "measured": null,
+      "unit": "seconds",
+      "denominator": null,
+      "evidence": "",
+      "conditions": ""
+    },
+    "rto_seconds": {
+      "threshold": null,
+      "measured": null,
+      "unit": "seconds",
+      "denominator": null,
+      "evidence": "",
+      "conditions": ""
+    }
+  },
+  "blocker_defects": null,
+  "uat_passed": false,
+  "rollback_rehearsed": false,
+  "retention_days": {
+    "originals": null,
+    "derived": null,
+    "exports": null,
+    "logs": null,
+    "backups": null
+  },
+  "pilot": {
+    "project_ids": [],
+    "user_count": null,
+    "observe_hours": null,
+    "oncall_primary": "",
+    "oncall_backup": "",
+    "rollback_decider": ""
+  }
+}

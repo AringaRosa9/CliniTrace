@@ -1,0 +1,16 @@
+.git
+**/node_modules
+**/.next
+**/.venv
+**/__pycache__
+**/.env
+**/.env.*
+!**/.env.example
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+test-results
+evaluation/reports
+runtime
+local-data
+*.log
