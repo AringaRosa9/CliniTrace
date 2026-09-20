@@ -4,6 +4,8 @@
 
 ## 当前状态
 
+S5 交付工程已实现：机构部署模板、非 root 镜像定义、受保护监控/告警、维护模式、一致性备份/恢复、授权项目删除、试点项目初始化、发布门禁、压力与无障碍验证、UAT/培训/灰度与回滚材料。见 [S5 验收记录](docs/testing/s5-report.md) 与 [运行手册](docs/operations/s5.md)。本地恢复/删除演练通过；镜像完整构建因外部 registry 连接失败待验证。机构授权、实测门槛签署、现场 UAT 和正式灰度尚未完成，不能宣称试点已放行。
+
 S4 管理与质量闭环已实现：模板/指南不可变发布、词库授权与映射历史、独立标注/二审/裁决、患者隔离金标准冻结、离线评测/版本对比、纠错二审及测试集防污染。管理入口为 `/templates`、`/terminology`、`/quality`。见 [S4 验收记录](docs/testing/s4-report.md)、[运行手册](docs/operations/s4.md) 和 [200 份样本计划](docs/data/s4-sampling-plan.md)。当前为本地合成工程验收，真实医学样本与正式词库仍待机构提供。
 
 S1 文档与持久化已实现：登录与项目能力、患者/就诊建档、真实文件上传、私有对象存储、Outbox/Worker 任务、解析预览、取消/重试/恢复、关联更正及审计。文档页面位于 `/documents` 和 `/projects/[projectId]/documents`。S2 已实现本地 OCR 适配、版本化 Schema 抽取、证据校验、事实关系、术语候选、规则问题及待审核集合。S3 已实现三栏审核工作台、事实修订/补录/排除、逐项核对、问题处置、审核快照、数据集筛选与异步 JSON/CSV 导出。见 [S3 验收记录](docs/testing/s3-report.md) 和 [S3 运行手册](docs/operations/s3.md)。详见 [S2 验收记录](docs/testing/s2-report.md) 和 [S2 运行手册](docs/operations/s2.md)。详见 [S1 验收记录](docs/testing/s1-report.md) 和 [运行手册](docs/operations/s1.md)。
@@ -60,6 +62,7 @@ pnpm test:s1
 pnpm test:s2
 pnpm test:s3
 pnpm test:s4
+pnpm test:s5
 RUN_DB_TESTS=1 uv run --project backend pytest backend/tests/integration
 pnpm contracts:check
 pnpm audit --audit-level high

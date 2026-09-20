@@ -1,0 +1,15 @@
+{
+  "workload": "authenticated documents/reviews/me reads; excludes OCR/model and review writes",
+  "requests": 200,
+  "concurrency": 8,
+  "duration_seconds": 1.794,
+  "p50_ms": 86.189,
+  "p95_ms": 104.365,
+  "failure_rate": 0.0,
+  "requests_per_second": 111.474,
+  "thresholds": {
+    "p95_ms": 1000.0,
+    "failure_rate": 0
+  },
+  "passed": true
+}

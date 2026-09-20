@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 const config: NextConfig = {
   poweredByHeader: false,
+  output: "standalone",
   experimental: { proxyClientMaxBodySize: "21mb" },
   async rewrites() {
     const origin = process.env.API_INTERNAL_URL ?? "http://127.0.0.1:18000";

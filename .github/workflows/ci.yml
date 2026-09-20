@@ -1,4 +1,4 @@
-name: S4 management and quality loop
+name: S5 release and pilot verification
 on: [push, pull_request]
 permissions:
   contents: read
@@ -57,6 +57,10 @@ jobs:
       - run: pnpm test:s2
       - run: pnpm test:s3
       - run: pnpm test:s4
+      - run: pnpm test:s5
+      - run: RUN_OPS_DRILL=1 uv run --project backend pytest backend/tests/integration/test_s5_drill.py
+        env:
+          OPS_PG_CONTAINER: ${{ job.services.postgres.id }}
       - run: pnpm exec playwright test --config playwright.app.config.ts
       - run: pnpm audit --audit-level high
       - run: uv run --project backend pip-audit --local
@@ -67,3 +71,11 @@ jobs:
           path: |
             test-results
             docs/testing/baseline
+  images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f infra/docker/backend.Dockerfile -t clinical-backend:${{ github.sha }} .
+      - run: docker build -f infra/docker/frontend.Dockerfile -t clinical-frontend:${{ github.sha }} .
+      - run: docker run --rm clinical-backend:${{ github.sha }} python -c "from app.main import app; assert app"
+      - run: docker run --rm --entrypoint node clinical-frontend:${{ github.sha }} --check frontend/server.js

@@ -1,3 +1,4 @@
+import time
 from collections.abc import Awaitable, Callable
 from uuid import UUID, uuid4
 
@@ -18,22 +19,28 @@ from app.api.s4 import router as s4_router
 from app.contracts.models import ErrorResponse, HealthResponse
 from app.core.config import Settings, get_settings
 from app.modules.identity.service import principal
+from app.operations.telemetry import RequestMetrics
+from app.operations.telemetry import router as operations_router
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     app = FastAPI(title="临床数据结构化平台 API", version="0.1.0")
     app.state.settings = settings
+    app.state.metrics = RequestMetrics()
 
     @app.middleware("http")
     async def request_context(
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
+        started = time.monotonic()
         try:
             request_id = UUID(request.headers.get("X-Request-ID", ""))
         except ValueError:
             request_id = uuid4()
         request.state.request_id = request_id
+        if settings.maintenance_mode and request.method not in ("GET", "HEAD", "OPTIONS"):
+            return error(request, 503, "MAINTENANCE", "Service temporarily read-only")
         response: Response
         total = 0
         cap = settings.max_upload_bytes + 64 * 1024
@@ -74,6 +81,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         response.headers["X-Request-ID"] = str(request_id)
         response.headers["Cache-Control"] = "no-store"
         response.headers["X-Content-Type-Options"] = "nosniff"
+        route = request.scope.get("route")
+        route_name = getattr(route, "path", "unmatched")
+        if route_name != "/internal/metrics":
+            app.state.metrics.observe(
+                route_name, response.status_code, time.monotonic() - started, str(request_id)
+            )
         return response
 
     def error(request: Request, status: int, code: str, message: str) -> JSONResponse:
@@ -83,7 +96,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             request_id=request.state.request_id,
             retryable=status in (429, 503),
         )
-        return JSONResponse(status_code=status, content=payload.model_dump(mode="json"))
+        return JSONResponse(
+            status_code=status,
+            content=payload.model_dump(mode="json"),
+            headers={
+                "X-Request-ID": str(request.state.request_id),
+                "Cache-Control": "no-store",
+                "X-Content-Type-Options": "nosniff",
+            },
+        )
 
     async def dependency_error(request: Request, exc: Exception) -> JSONResponse:
         return error(request, 503, "SERVICE_UNAVAILABLE", "Dependency temporarily unavailable")
@@ -121,6 +142,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         """Liveness only. Does not claim database, storage, or workers are ready."""
         return HealthResponse()
 
+    app.include_router(operations_router)
     app.include_router(router)
     app.include_router(s2_router)
     app.include_router(s3_router)

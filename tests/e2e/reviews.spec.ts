@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 test("两文书工作台、审核、下载和修改失效", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
@@ -98,6 +99,16 @@ test("两文书工作台、审核、下载和修改失效", async ({ page }) => 
   await expect(
     page.getByRole("heading", { name: "审核工作台", exact: true }),
   ).toBeVisible();
+  expect(
+    (
+      await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+        .analyze()
+    ).violations,
+  ).toEqual([]);
+  await expect(
+    page.getByRole("heading", { name: "审核工作台", exact: true }),
+  ).toBeVisible();
   await expect(page.locator(".case-context")).toContainText("2 份关联文书");
   await page.getByRole("button", { name: "证据 1 · 第 1 页" }).first().click();
   await expect(page.locator(".source-block mark")).toBeVisible();
@@ -178,14 +189,26 @@ test("两文书工作台、审核、下载和修改失效", async ({ page }) => 
   await page.getByLabel("患者键", { exact: true }).fill(key);
   await expect(page.locator(".dataset-counts")).toContainText("已审核 1 次");
   await page.getByLabel(`选择患者 ${key}`).check();
-  await page.getByLabel("数据用途").fill("合成闭环浏览器验收");
+  await page.getByLabel("数据用途").fill(`合成闭环浏览器验收 ${key}`);
   await page.getByRole("button", { name: "生成导出文件" }).click();
-  const latest = page.locator(".export-history article").first();
+  const latest = page
+    .locator(".export-history article")
+    .filter({ hasText: `合成闭环浏览器验收 ${key}` });
   await expect(latest).toContainText("已完成");
   const downloaded = page.waitForEvent("download");
   await latest.getByRole("button", { name: "下载 JSON" }).click();
   expect((await downloaded).suggestedFilename()).toMatch(/\.json$/);
   await page.goto(`/projects/${project}/reviews/${scope.id}`);
+  await expect(
+    page.getByRole("heading", { name: "审核工作台", exact: true }),
+  ).toBeVisible();
+  expect(
+    (
+      await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+        .analyze()
+    ).violations,
+  ).toEqual([]);
   await page.getByRole("button", { name: "编辑 / 排除" }).first().click();
   await page.getByLabel("修改理由").fill("审核后再次核对原文并记录修订");
   await page.getByRole("button", { name: "保存修订", exact: true }).click();

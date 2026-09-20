@@ -1,0 +1,23 @@
+{
+  "data": "synthetic-only",
+  "backup": {
+    "objects": 12,
+    "tables": 45,
+    "references": 11,
+    "manifest_sha256": "4e13293a82ae681191fa22fca708f666eaadf56cc98b24471a17228aee70ba7c"
+  },
+  "restore": {
+    "tables": 45,
+    "objects": 12,
+    "references": 11,
+    "consistent": true
+  },
+  "restore_seconds": 0.4,
+  "total_seconds": 4.809,
+  "deletion": {
+    "status": "complete",
+    "objects": 15
+  },
+  "snapshot_equal": true,
+  "other_project_preserved": true
+}

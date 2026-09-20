@@ -9,7 +9,11 @@ export function ManagementWorkspace({
   ...props
 }: Props & { mode: "templates" | "terminology" | "quality" }) {
   return (
-    <main id="main" className="documents-main management-workspace">
+    <main
+      id="main"
+      tabIndex={-1}
+      className="documents-main management-workspace"
+    >
       {mode === "templates" ? (
         <Templates {...props} />
       ) : mode === "terminology" ? (

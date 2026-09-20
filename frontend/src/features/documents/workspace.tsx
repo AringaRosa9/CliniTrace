@@ -242,7 +242,7 @@ function AppShell({
             }}
           />
         ) : (
-          <main id="main" className="login-main">
+          <main id="main" tabIndex={-1} className="login-main">
             <p className="eyebrow">CLINICAL DATA STRUCTURING PLATFORM</p>
             <h1>登录文档工作空间</h1>
             {me.isPending && !expired ? (
@@ -418,7 +418,7 @@ function Project({
           />
         )
       ) : (
-        <main id="main">
+        <main id="main" tabIndex={-1}>
           <h1>暂无可访问的项目</h1>
           <p className="intro">请由项目负责人为账号分配项目和操作能力。</p>
         </main>
@@ -521,7 +521,7 @@ function Documents({
     }
   }
   return (
-    <main id="main" className="documents-main">
+    <main id="main" tabIndex={-1} className="documents-main">
       {!online && (
         <Notice>
           网络已断开。已保存的记录仍在服务端，连接恢复后将自动刷新。
@@ -745,7 +745,7 @@ function Documents({
         )}
       </div>
       <p className="footnote">
-        解析与抽取结果已保存。事实进入待审核后仍需人工核对，医学审核与导出将在下一阶段开放。
+        解析与抽取结果已保存。请在审核工作台核对原文证据；完成审核后，可从数据集导出已审核快照。
       </p>
     </main>
   );

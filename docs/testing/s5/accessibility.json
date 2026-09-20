@@ -1,0 +1,152 @@
+[
+  {
+    "route": "documents",
+    "width": 390,
+    "violations": []
+  },
+  {
+    "route": "reviews",
+    "width": 390,
+    "violations": []
+  },
+  {
+    "route": "templates",
+    "width": 390,
+    "violations": []
+  },
+  {
+    "route": "terminology",
+    "width": 390,
+    "violations": []
+  },
+  {
+    "route": "datasets",
+    "width": 390,
+    "violations": []
+  },
+  {
+    "route": "quality",
+    "width": 390,
+    "violations": []
+  },
+  {
+    "route": "documents",
+    "width": 768,
+    "violations": []
+  },
+  {
+    "route": "reviews",
+    "width": 768,
+    "violations": []
+  },
+  {
+    "route": "templates",
+    "width": 768,
+    "violations": []
+  },
+  {
+    "route": "terminology",
+    "width": 768,
+    "violations": []
+  },
+  {
+    "route": "datasets",
+    "width": 768,
+    "violations": []
+  },
+  {
+    "route": "quality",
+    "width": 768,
+    "violations": []
+  },
+  {
+    "route": "documents",
+    "width": 1024,
+    "violations": []
+  },
+  {
+    "route": "reviews",
+    "width": 1024,
+    "violations": []
+  },
+  {
+    "route": "templates",
+    "width": 1024,
+    "violations": []
+  },
+  {
+    "route": "terminology",
+    "width": 1024,
+    "violations": []
+  },
+  {
+    "route": "datasets",
+    "width": 1024,
+    "violations": []
+  },
+  {
+    "route": "quality",
+    "width": 1024,
+    "violations": []
+  },
+  {
+    "route": "documents",
+    "width": 1440,
+    "violations": []
+  },
+  {
+    "route": "reviews",
+    "width": 1440,
+    "violations": []
+  },
+  {
+    "route": "templates",
+    "width": 1440,
+    "violations": []
+  },
+  {
+    "route": "terminology",
+    "width": 1440,
+    "violations": []
+  },
+  {
+    "route": "datasets",
+    "width": 1440,
+    "violations": []
+  },
+  {
+    "route": "quality",
+    "width": 1440,
+    "violations": []
+  },
+  {
+    "route": "documents",
+    "width": 1920,
+    "violations": []
+  },
+  {
+    "route": "reviews",
+    "width": 1920,
+    "violations": []
+  },
+  {
+    "route": "templates",
+    "width": 1920,
+    "violations": []
+  },
+  {
+    "route": "terminology",
+    "width": 1920,
+    "violations": []
+  },
+  {
+    "route": "datasets",
+    "width": 1920,
+    "violations": []
+  },
+  {
+    "route": "quality",
+    "width": 1920,
+    "violations": []
+  }
+]

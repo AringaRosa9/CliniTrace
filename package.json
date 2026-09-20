@@ -21,9 +21,11 @@
     "test:s1": "playwright test --config playwright.s1.config.ts",
     "test:s2": "playwright test --config playwright.s2.config.ts",
     "test:s3": "playwright test --config playwright.s3.config.ts",
-    "test:s4": "playwright test --config playwright.s4.config.ts"
+    "test:s4": "playwright test --config playwright.s4.config.ts",
+    "test:s5": "playwright test --config playwright.s5.config.ts"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.11.0",
     "@playwright/test": "1.63.0",
     "openapi-typescript": "7.13.0",
     "prettier": "3.9.6"

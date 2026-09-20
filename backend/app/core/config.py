@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     s3_bucket: str = "clinical-documents"
     session_secret: str = "development-only-session-secret-change-before-production"
     synthetic_access_code: str = ""
+    metrics_token: str = ""
+    metrics_collect_dependencies: bool = False
+    maintenance_mode: bool = False
     session_seconds: int = Field(default=3600, ge=60)
     public_origin: str = "http://127.0.0.1:13000"
     oidc_issuer: str = ""
@@ -83,6 +86,30 @@ class Settings(BaseSettings):
         if self.app_env == "production" and self.terminology_version.startswith("synthetic"):
             raise ValueError("Synthetic terminology is forbidden in production")
         if self.app_env == "production":
+            from urllib.parse import urlsplit
+
+            for endpoint in (
+                self.public_origin,
+                self.oidc_issuer,
+                self.oidc_jwks_url,
+                self.oidc_authorization_url,
+                self.oidc_token_url,
+            ):
+                url = urlsplit(endpoint)
+                if (
+                    url.scheme != "https"
+                    or not url.hostname
+                    or url.username
+                    or url.password
+                    or url.fragment
+                ):
+                    raise ValueError(
+                        "Production identity endpoints require HTTPS without credentials"
+                    )
+            if self.s3_access_key == "local-bljgh" or self.s3_secret_key == "local-only-change-me":
+                raise ValueError("Production requires independent storage credentials")
+            if len(self.metrics_token) < 32:
+                raise ValueError("Production requires an independent monitoring token")
             if len(self.session_secret) < 40 or self.session_secret.startswith("development-"):
                 raise ValueError("Production requires an independent session secret")
             if not all(

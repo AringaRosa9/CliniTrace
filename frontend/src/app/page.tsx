@@ -13,12 +13,22 @@ export default async function Home() {
     /* The workspace remains readable when the API is offline. */
   }
   const modules = [
-    ["01", "文档任务", "导入门诊记录与检验报告，关联患者和就诊。", "S1"],
-    ["02", "审核工作台", "对照原文证据，核对事实并保留修改依据。", "S3"],
-    ["03", "抽取模板", "固定字段、缺失语义和证据要求。", "S4"],
-    ["04", "术语管理", "按指定词库版本确认映射，保留待映射项。", "S4"],
-    ["05", "数据集", "基于已审核快照交付可追溯的数据。", "S3"],
-    ["06", "质量评测", "在冻结样本集上记录质量、耗时与成本。", "S4"],
+    [
+      "01",
+      "文档任务",
+      "导入门诊记录与检验报告，关联患者和就诊。",
+      "/documents",
+    ],
+    ["02", "审核工作台", "对照原文证据，核对事实并保留修改依据。", "/reviews"],
+    ["03", "抽取模板", "固定字段、缺失语义和证据要求。", "/templates"],
+    [
+      "04",
+      "术语管理",
+      "按指定词库版本确认映射，保留待映射项。",
+      "/terminology",
+    ],
+    ["05", "数据集", "基于已审核快照交付可追溯的数据。", "/datasets"],
+    ["06", "质量评测", "在冻结样本集上记录质量、耗时与成本。", "/quality"],
   ];
   return (
     <div className="workspace">
@@ -40,21 +50,10 @@ export default async function Home() {
         </div>
         <p className="sidebar-label">临床数据研究空间</p>
         <nav aria-label="业务模块">
-          {modules.map(([n, title, , stage]) => (
-            <a
-              key={n}
-              href={
-                n === "01"
-                  ? "/documents"
-                  : n === "02"
-                    ? "/reviews"
-                    : n === "05"
-                      ? "/datasets"
-                      : `#module-${n}`
-              }
-            >
+          {modules.map(([n, title, , href]) => (
+            <a key={n} href={href}>
               <span>{title}</span>
-              <small>{stage}</small>
+              <small>已开放</small>
             </a>
           ))}
         </nav>
@@ -63,13 +62,13 @@ export default async function Home() {
       <div className="content">
         <header>
           <span>工作空间 / 概览</span>
-          <span className="badge">开发环境 · 审核与数据交付</span>
+          <span className="badge">审核与数据交付</span>
         </header>
-        <main id="main">
+        <main id="main" tabIndex={-1}>
           <p className="eyebrow">CLINICAL DATA STRUCTURING PLATFORM</p>
           <h1>从原始文书，到有据可循的数据。</h1>
           <p className="intro">
-            文档、审核和数据集工作空间已开放。导入文书后核对原文证据，完成审核并导出可追溯的数据。
+            文档、审核、模板、术语、数据集与质量评测已开放。导入文书后核对原文证据，完成审核并导出可追溯的数据。
           </p>
           <section className="connection" aria-label="服务状态">
             <div>
@@ -89,10 +88,10 @@ export default async function Home() {
           <section aria-labelledby="modules-heading">
             <div className="section-heading">
               <h2 id="modules-heading">工作流程</h2>
-              <span>功能开放计划</span>
+              <span>工作空间入口</span>
             </div>
             <ol className="modules">
-              {modules.map(([n, title, description, stage]) => (
+              {modules.map(([n, title, description, href]) => (
                 <li id={`module-${n}`} key={n}>
                   <span className="step-number">{n}</span>
                   <div>
@@ -100,27 +99,19 @@ export default async function Home() {
                     <p>{description}</p>
                   </div>
                   <span className="stage">
-                    {n === "01" ? (
-                      <a href="/documents">进入文档任务 →</a>
-                    ) : n === "02" ? (
-                      <a href="/reviews">进入审核工作台 →</a>
-                    ) : n === "05" ? (
-                      <a href="/datasets">进入数据集 →</a>
-                    ) : (
-                      `${stage} · 待开放`
-                    )}
+                    <a href={href}>进入{title} →</a>
                   </span>
                 </li>
               ))}
             </ol>
           </section>
           <p className="footnote">
-            数据按登录项目隔离。OCR 与抽取需显式启用获准服务；质量评测在 S4
-            开放。
+            数据按登录项目隔离。OCR
+            与抽取需显式启用获准服务；质量评测以冻结样本集为依据。
           </p>
         </main>
         <footer>
-          临床数据结构化平台 <span>基础工程 v0.1.0</span>
+          临床数据结构化平台 <span>交付工程 v0.1.0</span>
         </footer>
       </div>
     </div>

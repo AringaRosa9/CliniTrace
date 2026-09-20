@@ -1,0 +1,69 @@
+# Institution supplies external PostgreSQL/Redis/private S3 and a TLS ingress.
+# Images must use immutable repository@sha256 references from the approved dossier.
+name: bljgh-pilot
+x-backend: &backend
+  image: ${BACKEND_IMAGE:?set approved backend digest}
+  env_file: ${RUNTIME_ENV_FILE:?set protected runtime env path}
+  restart: unless-stopped
+  read_only: true
+  tmpfs: ["/tmp:size=512m,mode=1777"]
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  pids_limit: 128
+  mem_limit: 2g
+  cpus: 2
+  stop_grace_period: 240s
+  logging:
+    driver: json-file
+    options: {max-size: "10m", max-file: "3"}
+services:
+  api:
+    <<: *backend
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/ready', timeout=20)"]
+      interval: 30s
+      timeout: 25s
+      retries: 3
+  worker:
+    <<: *backend
+    env_file: ${WORKER_ENV_FILE:?set protected worker env path}
+    command: [celery, -A, "app.workers.runtime:celery", worker, -Q, "parsing,extracting,exporting", --loglevel=ERROR, --concurrency=2, --pool=prefork]
+  dispatcher:
+    <<: *backend
+    env_file: ${WORKER_ENV_FILE:?set protected worker env path}
+    command: [python, -m, app.workers.runtime]
+    mem_limit: 512m
+    cpus: 1
+  monitor:
+    <<: *backend
+    env_file: ${WORKER_ENV_FILE:?set protected worker env path}
+    environment:
+      METRICS_COLLECT_DEPENDENCIES: "true"
+    command: [uvicorn, "app.operations.monitor:app", --host, "0.0.0.0", --port, "9100", --no-access-log]
+    mem_limit: 512m
+    cpus: 1
+  frontend:
+    image: ${FRONTEND_IMAGE:?set approved frontend digest}
+    restart: unless-stopped
+    read_only: true
+    tmpfs: ["/tmp:size=64m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 64
+    mem_limit: 512m
+    cpus: 1
+  gateway:
+    image: ${GATEWAY_IMAGE:?set approved nginx digest}
+    restart: unless-stopped
+    user: "101:101"
+    read_only: true
+    tmpfs: ["/tmp:size=64m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    entrypoint: [nginx, -g, "daemon off;"]
+    ports: ["127.0.0.1:18080:8080"]
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on: [api, frontend]
+    mem_limit: 128m
+    cpus: 1
